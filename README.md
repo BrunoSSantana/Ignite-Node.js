@@ -9,7 +9,7 @@
 
 ---
 
-* [Chapter I]()
+* [Chapter I](#chapter-i)
   * [Aula I - Introdção](#aula-i)
   * [Aula II - Conceito do Node](#aula-ii)
   * [Aula III](#aula-ii)
@@ -30,10 +30,12 @@
   * [Aula XVIII](#aula-xviii)
   * [Aula XIX](#aula-xix)
   * [Aula XX](#aula-xx)
-* [Chapter II](#aula-i)
+* [Chapter II](#chapter-ii)
   * [Aula XXI](#aula-xxi)
 
 ---
+
+## CHAPTER I
   
   ## Aula I
   > Introdução
@@ -228,3 +230,121 @@ Adicionar Requisição => New Request / Selecionar método
   * & => separador
 * Route Params
 * Body Params
+
+
+## Aula X
+> Conhecendo os requisitos da aplicação
+
+REQUISITOS:
+- [X] Criar uma conta
+- [X] Buscar o extrato bancário
+- [X] Realizar um depósito
+- [X] Realizar um saque
+- [X] Buscar o extrato bancário do cliente por data
+- [X] Atualizar dados da conta do cliente
+- [X] Obter dados da conta do cliente
+- [X] Deletar uma conta
+
+REGRAS DE NEGÓCIO:
+- [X] Não poder cadastrar uma conta com
+- [X] Não poder fazer depósito em uma conta não existente
+- [X] Não poder buscar extrato em uma conta que não existe
+- [X] Não poder fazer saque em uma conta não existente
+- [X] Não poder excluir uma conta não existente
+- [X] Não poder fazer saque quando o saldo for insuficiente
+
+## Aula XI
+> Cadastro de conta
+
+* Criar array 'customers'
+* Dados que no body: CPF, name
+* Dados da conta:
+ * CPF: string
+ * name: string
+ * statement: array
+ * id: uuid
+
+```javascript
+app.post("/account", (request, response) => {
+    const {cpf, name} = request.body;
+
+    customers.push({
+        cpf,
+        name,
+        id: uuid(),
+        statement: []
+    })
+
+    return response.status(201).send();
+});
+```
+
+## Aula XII
+> Validando CPF existente
+
+```javascript
+ const customerAlreadyExists = customers.some((customer) => customer.cpf === cpf);
+
+ if (customerAlreadyExists) {
+     return response.status(400).json({ error: "Customer Already Exists" });
+ }
+```
+
+## Aula XIII
+> Listando extrato
+
+```javascript
+ const customer = customers.find(customer => customer.cpf === cpf);
+ return response.json(customer.statement);
+```
+
+## Aula XIV
+> Validando conta
+
+## Aula XV
+> Middlewares
+
+Função que age entre o request e o reponse. No express, necessariamente precisam ser passados 3 parâmetros: request, response e next.
+```javascript
+function userExists(request, response, next) {
+    const { cpf } = request.headers
+
+    const customer = customers.find(customer => customer.cpf === cpf);
+
+    if (!customer) {
+        return response.status(401).json({error: "Customer not found!"});
+    }
+
+    request.customer = customer;
+
+    return next();
+}
+```
+Existem e maneiras principais de usar middlewares com express
+1. Declarando a função passando ela no `app.use(nome do middleware)`
+2. Declarando a função e passando ela dentro do método de roteamento
+```javascript
+app.get("/statement", userExists, (request, response) => {
+    return response.json(customers);
+});
+```
+
+## Aula XVI
+> Criando depósito na conta
+
+
+## Aula XXVII
+> Criando saque na conta
+
+## Aula XVIII
+> Listar extrato bancário por data
+
+## Aula XIX
+> Atualizar conta
+
+## Aula XX
+> Remover conta
+
+## CHAPTER II
+
+## Aula XXI
