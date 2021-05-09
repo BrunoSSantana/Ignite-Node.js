@@ -5,41 +5,35 @@
 <p align="center">
 <img src="https://img.shields.io/github/license/BrunoSSantana/desafio02-trilha-node.js" />
 <img src="https://img.shields.io/github/last-commit/BrunoSSantana/desafio02-trilha-node.js">
-
 </p>
 
 ---
-<ul>
-  <li>Chapter I</li>
-  <ul>
-    <li><a href="Aula I">Aula I - Introdção</a></li>
-    <li>Aula II - Conceito do Node</li>
-    <li>Aula III</li>
-    <li>Aula IV</li>
-    <li>Aula V</li>
-    <li>Aula VI</li>
-    <li>Aula VII</li>
-    <li>Aula VIII</li>
-    <li>Aula IX</li>
-    <li>Aula X</li>
-    <li>Aula XI</li>
-    <li>Aula XII</li>
-    <li>Aula XIII</li>
-    <li>Aula XIV</li>
-    <li>Aula XV</li>
-    <li>Aula XVI</li>
-    <li>Aula XVII</li>
-    <li>Aula XVIII</li>
-    <li>Aula XIX</li>
-    <li>Aula XX</li>
-  </ul>
-  <li>Chapter II</li>
-  <ul>
-    <li>Aula VII</li>
-  </ul>
-<ul/>
-  
-  ---
+
+* [Chapter I]()
+  * [Aula I - Introdção](#aula-i)
+  * [Aula II - Conceito do Node](#aula-ii)
+  * [Aula III](#aula-ii)
+  * [Aula IV](#aula-iv)
+  * [Aula V](#aula-v)
+  * [Aula VI](#aula-vi)
+  * [Aula VII](#aula-vii)
+  * [Aula VIII](#aula-viii)
+  * [Aula IX](#aula-ix)
+  * [Aula X](#aula-x)
+  * [Aula XI](#aula-xi)
+  * [Aula XII](#aula-xii)
+  * [Aula XIII](#aula-xiii)
+  * [Aula XIV](#aula-xiv)
+  * [Aula XV](#aula-xv)
+  * [Aula XVI](#aula-xvi)
+  * [Aula XVII](#aula-xvii)
+  * [Aula XVIII](#aula-xviii)
+  * [Aula XIX](#aula-xix)
+  * [Aula XX](#aula-xx)
+* [Chapter II](#aula-i)
+  * [Aula XXI](#aula-xxi)
+
+---
   
   ## Aula I
   > Introdução
