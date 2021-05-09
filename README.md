@@ -9,7 +9,9 @@
 
 ---
 
-* [Chapter I](#chapter-i)
+ <details>
+  <summary>CHAPTER I</summary>
+ 
   * [Aula I - Introdção](#aula-i)
   * [Aula II - Conceito do Node](#aula-ii)
   * [Aula III](#aula-ii)
@@ -30,8 +32,29 @@
   * [Aula XVIII](#aula-xviii)
   * [Aula XIX](#aula-xix)
   * [Aula XX](#aula-xx)
-* [Chapter II](#chapter-ii)
+ 
+</details>
+
+<details>
+ <summary>CHAPTER I</summary>
+ 
   * [Aula XXI](#aula-xxi)
+  * [Aula XXII](#aula-xxii)
+  * [Aula XXIII](#aula-xxiii)
+  * [Aula XXIV](#aula-xxiv)
+  * [Aula XXV](#aula-xxv)
+  * [Aula XXVI](#aula-xxvi)
+  * [Aula XXVII](#aula-xxvii)
+  * [Aula XXVIII](#aula-xxviii)
+  * [Aula XXIX](#aula-xxix)
+  * [Aula XXX](#aula-xxx)
+  * [Aula XXXI](#aula-xxxi)
+  * [Aula XXXII](#aula-xxxii)
+  * [Aula XXXIII](#aula-xxxiii)
+  * [Aula XXXIV](#aula-xxxiv)
+  * [Aula XXXV](#aula-xxxv)
+
+</details>
 
 ---
 
@@ -300,6 +323,16 @@ app.post("/account", (request, response) => {
 
 ## Aula XIV
 > Validando conta
+ 
+```javascript
+    const { cpf } = request.headers
+
+    const customer = customers.find(customer => customer.cpf === cpf);
+
+    if (!customer) {
+        return response.status(401).json({error: "Customer not found!"});
+    }
+```
 
 ## Aula XV
 > Middlewares
@@ -332,19 +365,284 @@ app.get("/statement", userExists, (request, response) => {
 ## Aula XVI
 > Criando depósito na conta
 
+```javascript
+app.post("/deposit", userExists, (request, response) => {
+    const { customer } = request;
+    const { amount, description } = request.body;
+
+    const deposit = {
+        amount,
+        description,
+        type: "credit",
+        created_at: new Date()
+    }
+
+    customer.statement.push(deposit)
+
+    return response.status(201).send();
+
+    
+});
+```
 
 ## Aula XXVII
 > Criando saque na conta
 
+```javascript
+
+app.post("/withdraw", userExists, (request, response) => {
+    const { customer } = request;
+    const { amount } = request.body;
+
+    const balance = getBalance(customer.statement);
+
+    if (balance<=amount) {
+        return response.status(400).json({error: "Saldo insuficiente"})
+    }
+
+    const deposit = {
+        amount,
+        type: "debit",
+        created_at: new Date()
+    }
+
+    customer.statement.push(deposit)
+
+    return response.status(201).send();
+
+});
+```
+
 ## Aula XVIII
 > Listar extrato bancário por data
+
+```javascript
+app.get("/statement/:date", userExists, (request, response) => {
+    const { customer } = request;
+    const { date } = request.query;
+
+    const dateFormat = new Date( date + " 00:00");
+
+    const statement = customer.statement.filter((statement) => statement.created_at.toDateString() === new Date(dateFormat).toDateString());
+
+    return response.json({statement})
+});
+```
 
 ## Aula XIX
 > Atualizar conta
 
+```javascript
+app.put("/account", userExists, (request, response) => {
+    const { customer } = request;
+    const { name } = request.body;
+
+    customer.name = name;
+
+    return response.status(201).send();
+});
+```
+
 ## Aula XX
 > Remover conta
+
+```javascript
+app.delete("/account", userExists, (request, response) => {
+    const { customer } = request;
+
+    customers.splice(customer, 1);
+
+    return response.status(200).json(customers);
+});
+```
 
 ## CHAPTER II
 
 ## Aula XXI
+> Introdução
+
+Nesse capítulo será desenvolvido uma API de aluguel de carros onde iremos trabalhar nessa API com o typescript explicar pq usá-lo, como usá-lo. Na nossa API faremos cadastros de usuários, alugueis, carros e suas especificações com o intuito de construir um sistema de busca, além de abordar o streming do node e seus módulos, introdução a SOLID (princípios de programação orientada a objeto), arquitetura limpa, melhorar a escrita e a qualidade do código afim de facilitar o entendimento e sua manutenção além da criação de uma documentação com utilização de ferramentas.
+
+## Aula XXII
+> Introdução ao Typescript
+
+* Superset  do Javascript open-source criada pelo time da Microsoft
+* Definido como Estaticamente Tipada
+* Ter um controle melhor sobre o tipo de parâmetros a serem passados nas funções e um melhor controle de forma geral na aplicação, diminuindo a chance de erros futuramente
+* A ideia do Typescript é complementar o Javascript e não substituílo
+* Não é necessário tipar todas as variáveis (porém recomenda-se e tipe ao máximo já que estamos usando esse super set pra isso)
+* Auxilia a desenvolvimento
+
+## Aula XXIII
+> Criando Projeto com Typescript
+
+- [x] Criar Pasta
+- [x] `yarn init -y`
+- [x] `mkdir src/`
+- [x] `touch src/server.ts`
+- [x] `yarn add express`
+
+### Importando dependências
+
+Com Javascript:
+```javascript
+const express = require('express');
+```
+
+Com Typescript:
+```typescript
+import express from 'express';
+```
+
+### Adicionando Tipagens do express
+
+Com o Typescript a depedêcia requer mais uma dependência afim de tipar e ajudar no intellisense. Para tal, efetuamos o comando a seguir:
+```bash
+yarn add @types/express -D
+```
+> lembrando que a flag `-D` significa que será instalada como dependência de desenvolvimento, já que só utilizamos o typescript em ambiente de desenvolviment.
+
+### Criando a primeira rota
+
+```typescript
+const app = express(); // chamando express
+app.get("/", (request, response) => {
+    return response.json({message: "Hello, World"})
+}); // modelo de rota com express
+app.listen(3333) // porta onde será ouvido nosso servidor
+```
+
+Por padrão atualmente, o node não reonhece a syntaxe de import/export, para isso é preciso que esse código seja convetido de alguma forma em javascript para que ela possa ser executado. Para isso, primeiramente nós instalamos a dependência do typescript e seguimos os seguinte passos:
+
+- Instalando Typescript :arrow_right: `yarn add typescript -D`
+- Iniciando o typescript :arrow_right: `yarn tsc --init`
+- Em tsconfig.json, setamos :arrow_right: ` "outDir": "./dist"`
+- Convertendo para Js :arrow_right:`yarn tsc`
+- Executando arquivo criado :arrow_right: `node dist/server.js`
+
+## Aula XXIV
+> Adicionando os Tipos
+
+Vamos iniciar criando dois arquivos na pasta src:
+
+```bash
+touch src/routes.ts src/CreateCoursesService.ts
+```
+Nos arquivos criados, vamos como adicionar tipagens. Como em tantas outras linguagens de programação, nós definimos que tipo dedado (string, number, boolean...) determinada função irá receber. Podendo no Typescript ser feito esse procedimento de duas formas como veremos. 
+
+CreateCoursesService.ts:
+```typescript
+class CreateCoursesService {
+    execute(name: string, duration: number, educator: string) {
+
+    }
+}
+
+export default new CreateCoursesService;
+```
+> Dessa forma, os parâmetros vão ter por obrigação serem passados para função nessa ordem ou dará erro.
+
+```typescript
+interface ICourse {
+    name: string;
+    duration: number;
+    educator: string;
+}
+
+class CreateCoursesService {
+    execute({name, duration, educator}: ICourse) {
+
+    }
+}
+
+export default new CreateCoursesService;
+```
+> Os parâmetros não precisarão serem passados para função nessa mesma ordem.
+
+routes.ts:
+```typescript
+import { Request, Response } from 'express';
+import CreateCoursesService from './CreateCoursesService';
+
+export function createCourse(request: Request, response: Response) {
+    CreateCoursesService.execute("NodeJS", 10, "Dani");
+
+    return response.send();
+}
+```
+server.ts:
+```typescript
+app.get("/", createCourse);
+```
+Para verificar executar o código criado precisamos dos seguinte comandos:
+```bash
+yarn tsc
+node dist/server.js
+```
+
+Aqui vamos importar o Request e o Response do express já que não está dentro o módulo de rotas.
+```typescript
+import { Request, Response } from 'express';
+import CreateCoursesService from './CreateCoursesService';
+
+export function createCourse(request: Request, response: Response) {
+    CreateCoursesService.execute({
+        name: "NodeJS", 
+        duration: 10,
+        educator: "Dani"
+    });
+
+    return response.send();
+}
+```
+e aqui vamos verificar se está funcionando com os seguintes comandos:
+```bash
+yarn tsc
+node dist/server.js
+```
+
+## Aula XXV
+> Definindo os parâmetos obrigatórios
+
+Para definir quais parâmetros serão obrigatórios, temos que definir primeiro qais serão opicionais opicionais, para isso pasta utilizar `?` após o nome do parâmetro e antes do `:` na interface, como é mostrado a seguir.
+```typescript
+interface ICourse {
+    name: string;
+    duration?: number;
+    educator: string;
+}
+```
+
+Com o Typescript assim como no Javascript, podemos definir o valor default (padrão), como por exemplo:
+```javascript
+class CreateCoursesService {
+    execute({name, duration = 8, educator}: ICourse) {
+
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
