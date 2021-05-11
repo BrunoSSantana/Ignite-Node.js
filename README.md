@@ -34,7 +34,7 @@
   * [Aula XX](#aula-xx)
 </details>
 <details>
- <summary>DESAFIOS CHAPTER I</summary>
+ <summary>DESAFIOS I</summary>
 
  - [Desafio: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio01-trilha-node.js/)
  - [Desafio: Trabalhando com Middlewares](https://github.com/BrunoSSantana/desafio02-trilha-node.js/)
@@ -627,17 +627,244 @@ class CreateCoursesService {
 }
 ```
 
+## Aula XXVI
+> Configurando ts-node-dev
 
+- Iniciar aplicação rentalx
+```bash
+yarn init -y
+yarn add express
+yarn add @types/express -D
+yarn add typescript -D
+yarn tsc --init
+yarn ts-node-dev -D
+```
+- Adicionar script no package.json
+```bash
+"scripts": {
+    "dev": "ts-node-dev --transpile-only --ignore-watch node-modules --respawn src/server.ts"
+},
+```
+- Padronização de código com [eslint](https://www.youtube.com/watch?v=rCeGfFk-uCk&t=1935s) e prettier
+- Desabilitar no `tsconfig.json` a conf `strict`
+- Testar rota
+```typescript
+import express from "express";
 
+const app = express();
 
+app.get("/", (request, response) => {
+  return response.json({ message: "Hello World" });
+});
 
+app.listen(3333, () => console.log("Server is running"));
+```
+## Aula XXVII
+> Debugando aplicação
 
+O uso do `console.log` apesar de funcionar muitas vezes para ajudar achar o erro na aplicaão, muitas vezes não é o mais rápido e eficiente. Afim de agilizar o nosso processo vamos começar a utilizar a ferramenta de debug do vscode. No lado esquerdo da tela, próimo ao eplorador do vscode, vamos abrir a seção de executar e depurar e clicar na opção de "create a launch.json file" e selecionar a opção de Node.js
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Launch Program",
+      "skipFiles": ["<node_internals>/**"],
+      "outFiles": ["${workspaceFolder}/**/*.js"]
+    }
+  ]
+}
+```
+Após feito a configuração podemos rodar o comando `yarn dev` selecionar o break point e clicar no botão de :arrow_forward: do depurador. É possível observar as variáveis presentens no processo adicionando-as precionando o botão de :heavy_plus_sign: .
 
+## Aula XXVIII
+> Criando Categoria
 
+O diagrama abaixo represata de como iremos montar nossa aplicação com as tabelas que iremos criar
 
+![](https://xesque.rocketseat.dev/1571029149847-attachment.png)
 
+Agora iremos iniciar trabalhando nas nossas rotas. Para isso, dentro da pastas `src` vamos criar outro diretório chamado `routes` e dentro criar um arquivo `categorias.routes.ts` onde iremos importar o `Router` do `express`, em seguida guardamos o  `Router` em uma const (de preferência que faça referência ao tipo da rota por exemplo, `categoriesRoutes`) para fazermos a criação de nossas rotas e exportamos ela no fim do arquivo.
 
+**Exemplo de Rota criada:**
 
+```typescript
+import { Router } from "express";
+
+const categoriesRoutes = Router();
+
+const categories = [];
+
+categoriesRoutes.post("/", (request, response) => { // apenas "/" pois iremos passar o "/categories" junto ao nosso middleware
+  const { name, description } = request.body;
+
+  categories.push({
+    name,
+    description,
+  });
+
+  return response.status(201).send(); //.send() obrigatório sempre que n for passando um json ou algo do tipo
+});
+
+export { categoriesRoutes };
+
+```
+
+Para podermos usar as rotas criadas neste arquivo precisamos fazer duas coisas importar no arquivo `server.ts` e dar use => `app.use("/categoris",categoriesRoutes)`, onde o primeiro termo passado no nosso middleware significa a rota que sempre irá fazer. agora podemos verificar se está tudo rodando corretamente.
+
+## Aula XXIX
+> Inserindo Id com uuid
+
+Para criarmos nossos id por motivos de segurança simulando o que ocorre normalemnte no cenário real, iremos utilizar o formato uuid que nada mais é que um Identificador Único Universal. Assim, iremos utilizar a biblioteca uuid na qual conta com algumas opções de formatos do uuid, escolheremos a v4 que gera a chave a partir de números aleatórios.
+```bash
+yarn add uuid
+```
+
+## Aula XXX
+> Inserindo tipagem para categoria
+
+Afim de criar uma estrutura de dados que serão passados no `POST/categories` vamos criar justamente um modelo que nossa categoria irá ter. Dessa forma, na pasta `src/` vamos criar outro diretório, `model` e nele criar um arquivo chamado `Category.ts`, onde vamos criar a seguinte estrutura, utilizando-se das funciolidades de tipagem do typescript:
+```typescript
+import { v4 as uuidv4 } from "uuid"; // importando a lib uuid
+
+class Category { // criando o objeto/modelo
+  id?: string; // o caractere '?' indica que é opicional
+  name: string; //usamos as tipagens do typescript
+  description: string;
+  created_at: Date;
+
+  constructor() { // o constructor é semelhante a um método que só é cahmado apenas quando o objeto é instânciado 
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+  }
+}
+
+export { Category };
+```
+
+E agora, no arquivo `categories.routes.ts`, na criação das rotas vamos utilizar esse objeto como um tipo, como no exemplo da criação de uma rota:
+```typescript
+categoriesRoutes.post("/", (request, response) => {
+  const { name, description } = request.body;
+
+  const category = new Category(); // instanciando o objeto
+
+  Object.assign(category, { // Utilizando esta função passamos como primeiro parâmetro o objeto e como segundo parâmetro os atributos.
+    name,
+    description,
+    created_at: new Date(),
+  });
+
+  categories.push(category);
+
+  return response.status(201).json({ category });
+});
+```
+
+## Aula XXXI
+> criando um Repositório de Categoria
+
+Repositórios ou Repositories é a camada responssável por fazer a manipulação de dados na aplicação, no momento na nossa aplicação essa responsabilidade está por conta das nossas rotas. Afim de resolver essa problemática, iremos criar um diretório dentro do `src/` chamado `repositories/` e nele, um arquivo representando o repositório das categorias `CategoriesRepository`, com a seguinte estrutura:
+
+```typescript
+import { Category } from "../model/Category";
+
+// Sempre quer formos criar um objeto que vai receber informaçãoes vindas da rota, vai criar os DTO para pegar os valores vindos da rota e receber em nossos repositórios
+interface ICreateCategoryDTO {
+  name: string;
+  description: string;
+}
+
+class CategoriesRepository {
+  private categories: Category[];
+
+  constructor() {
+    this.categories = [];
+  }
+
+  // responssávelpor cadastrar nossa categoria e será importada nas rotas
+  // Vamos dizer aqui que tipo de informações iremos receber na rota com ajuda do DTO
+  // informamos que o retorno desse método é vasio (void) jáque iremos apenas salvar os dados no db
+  create({ name, description }: ICreateCategoryDTO): void {
+    // instanciamos o nosso model
+    const category = new Category();
+
+    Object.assign(category, {
+      name,
+      description,
+      created_at: new Date(),
+    });
+
+    this.categories.push(category);
+  }
+}
+
+export { CategoriesRepository };
+```
+
+E no nosso arquivo de rotas vamos fazer algumas modificações:
+
+```typescript
+import { Router } from "express";
+
+import { CategoriesRepository } from "../repositories/CategoriesRepository";
+
+const categoriesRoutes = Router();
+const categoriesRepository = new CategoriesRepository(); // instanciando
+
+categoriesRoutes.post("/", (request, response) => {
+  const { name, description } = request.body;
+
+  // utilizando o método create passando as infos vindas do client
+  categoriesRepository.create({ name, description });
+
+  return response.status(201).send();
+});
+
+export { categoriesRoutes };
+```
+
+## Aula XXXII
+> Listando Categorias
+
+Ainda no nosso arquivo `CategoriesRepository` vamos criar  um método para listar nossas categorias da seguinte maneira:
+```typescript
+// informamos o retorno do nosso método que no casso é um array de Category
+list(): Category[] {
+  return this.categories; // retornando nosso array
+}
+```
+`categories.routes.ts`:
+```typescript
+categoriesRoutes.get("/", (request, response) => {
+  // guardando informação que retornou do método
+  const all = categoriesRepository.list();
+  // retonando
+  return response.json(all);
+});
+```
+
+## Aula XXXIII
+> Validando Cadastro de Categoria
+
+Para a nossa validação, vamos criar um método no nosso repositório chamado `findByName` onde iremos buscar uma categoria com aquele nome recebido na rota e retornará uma categoria.
+```typescript
+findByName(name: string): Category {
+  const category = this.categories.find((category) => category.name === name);
+  return category;
+}
+```
+para validação vamos fazer uma logica simple onde passamos o `name` passado no body, caso retorne uma categoria significa que já existe uma categoria com esse nome, nesse caso vamos retornar um `json` com a mensagem de erro, caso contrário, a rota seguirá  normalmente criando uma categoria com o novo `name`.
+```typescript
+const categoryAlreadyExists = categoriesRepository.findByName(name);
+
+if (categoryAlreadyExists) {
+  return response.json({ error: "category Already Exists" });
+}
+```
 
 
 
