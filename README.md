@@ -34,7 +34,7 @@
   * [Aula XX](#aula-xx)
 </details>
 <details>
- <summary>DESAFIOS I</summary>
+ <summary>DESAFIOS CHAPTER I</summary>
 
  - [Desafio: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio01-trilha-node.js/)
  - [Desafio: Trabalhando com Middlewares](https://github.com/BrunoSSantana/desafio02-trilha-node.js/)
