@@ -36,9 +36,9 @@
 <details>
  <summary>DESAFIOS I</summary>
 
- - [Desafio: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio01-trilha-node.js/)
- - [Desafio: Trabalhando com Middlewares](https://github.com/BrunoSSantana/desafio02-trilha-node.js/)
- - [Desafio: Corrigindo o código](https://github.com/BrunoSSantana/desafio03-trilha-node.js/)
+ - [Desafio I: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio01-trilha-node.js/)
+ - [Desafio II: Trabalhando com Middlewares](https://github.com/BrunoSSantana/desafio02-trilha-node.js/)
+ - [Desafio III: Corrigindo o código](https://github.com/BrunoSSantana/desafio03-trilha-node.js/)
 </details>
 <details>
  <summary>CHAPTER II</summary>
