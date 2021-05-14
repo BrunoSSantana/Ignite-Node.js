@@ -1580,6 +1580,151 @@ categories.map(async (category) => {
     });
 ```
 
+## Aula LII
+> Conhecendo o Swagger
+
+[Swagger](https://swagger.io) é uma ferramenta que nos ajuda a criar documentações claras de forma simples tanto pra quem faz quant pra quem utiliza.
+
+## Aula LII
+> Configurando o Swagger
+
+**Instalação**
+
+- Instalar: `yarn add swagger-ui-express`
+- Instalar tipagem: `yarn add @types/swagger-ui-express -D` 
+
+**Importação**
+
+Importar o swagger dentro no nosso server:
+```typescript
+import swaggerUi from "swagger-ui-express";
+...
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile)); // rota da documentação, middleware, JSON com as configurações
+```
+obs: é necesário que no tsconfig.json esteja habilitado a seguinte configuração: `"resolveJsonModule":true `
+
+**Criação do JSON**
+
+Esse JSON será responsável por todas as inforções apresentadas na documentação. todas as possibilidades de informação a respeito dessa parte está neste [link aqui](https://swagger.io/docs/specification/basic-structure/). Nosso JSON inicialmente ficará assim:
+```json
+{
+  "openapi":"3.0.0",
+  "info": {
+    "title": "RentalX Documentation",
+    "description": "This is an API Rent",
+    "version": "1.0.0",
+    "contact": {
+      "email": "brunoosouza15@gmail.com"
+    }
+  }
+}
+```
+Finalizado esta etapa, podemos rodar um `yarn dev` e ir até a rota <http://localhost:3333/api-docs>.
+
+## Aula LIII
+> Criando a Documentação de Criação de Categoria
+
+Após a seção de `infos`, vamos iniciar com a criação de um objetochamado `"paths":{}` que será responsável por adicionar todas as rotas seguindo a seguinte estrutura:
+```JSON
+  "paths": {
+    "/categories": {
+      "post": {
+        "tags": ["Category"],
+        "sumary": "Create a category",
+        "description": "Create a new category",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "name": "CategoryTest",
+                  "description": "Category description test"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "500": {
+            "description": "Category already exists"
+          }
+        }
+      }
+    }
+  }
+```
+
+## Auala LIV
+> Criando Documentação da Listagem de Categorias
+
+Agora vamos fazer a rota da documnetação pra fazer a listagem das categorias.
+
+```json
+"get": {
+        "tags":["Category"],
+        "summary": "List all category",
+        "description": "List all category",
+        "responses": {
+          "200": {
+            "description": "Sucess",
+            "content": {
+              "application/json": {
+                "schema":{
+                  "type":"array",
+                  "items": {
+                    "type":"object",
+                    "properties": {
+                      "name": {
+                        "type":"string"
+                      },
+                      "description":{
+                        "type":"string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+```
+
+## Aula LV
+> Removendo os Arquivos de Upload
+
+Adicone a seguinte linha no useCase do importCategory:
+```typescript
+parseFile
+        .on("data", async (line) => {
+          const [name, description] = line;
+          categories.push({
+            name,
+            description,
+          });
+        })
+        .on("end", () => {
+          fs.promises.unlink(file.path); // passe o caminho do arquivo a ser excluído
+          resolve(categories);
+        })
+        .on("error", (err) => {
+          reject(err);
+        });
+```
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
