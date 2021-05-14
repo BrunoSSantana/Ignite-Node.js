@@ -481,6 +481,9 @@ Nesse capítulo será desenvolvido uma API de aluguel de carros onde iremos trab
 ## Aula XXIII
 > Criando Projeto com Typescript
 
+Agora vamos iniciar a desenvolver a [API RENTALX]()
+
+
 - [x] Criar Pasta
 - [x] `yarn init -y`
 - [x] `mkdir src/`
