@@ -8,7 +8,7 @@
 </p>
 
 ---
-
+### Sumário
  <details>
   <summary>CHAPTER I</summary>
  
@@ -60,6 +60,9 @@
   * [Aula XXXV](#aula-xxxv)
 
 </details>
+
+### Projetos Criados
+- [RENTALX](https://github.com/BrunoSSantana/rentalx)
 
 ---
 
@@ -481,7 +484,7 @@ Nesse capítulo será desenvolvido uma API de aluguel de carros onde iremos trab
 ## Aula XXIII
 > Criando Projeto com Typescript
 
-Agora vamos iniciar a desenvolver a [API RENTALX]()
+Agora vamos iniciar a desenvolver a [API RENTALX](https://github.com/BrunoSSantana/rentalx)
 
 
 - [x] Criar Pasta
@@ -633,7 +636,7 @@ class CreateCoursesService {
 ## Aula XXVI
 > Configurando ts-node-dev
 
-- Iniciar aplicação rentalx
+- Iniciar aplicação [RENTALX](https://github.com/BrunoSSantana/rentalx)
 ```bash
 yarn init -y
 yarn add express
