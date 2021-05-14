@@ -1421,6 +1421,158 @@ import { router } from "./routes";
 app.use(router);
 ```
 
+## Aula XLV
+> Conhecendo o Multer
+
+Vamos cadasrar as categorias importando um arquivo, lendo o arquivo e salvando, para nos auxiliar vamos utilizar a biblioteca [multer](https://www.npmjs.com/package/multer) para o upload de arquivos.
+
+## Aula XLVI
+> Criando Upload de Arquivos
+
+- Instalar o multer: `yarn add multer`
+- Instalar as tipagens do multer: `yarn add @types/multer -D`
+- Criar rota: `categoriesRoutes.post("/import", (request, response) =>{})`
+- Instanciar o multer: `const upload = multer()`
+- Criar pasta `temp/` na raiz no projeto
+- setar o pasta de destino do upload: `const upload = multer({dest: "./temp"})`
+- passar o multer como middleware: `categoriesRoutes.post("/import", upload.single("file"), (request, response) =>{})` obs.: o nome do arquivo q será passad, será "file"
+
+Visualizando o arquivo importado
+
+```typescript
+categoriesRoutes.post("/import", upload.single("file"), (request, response) =>{
+  const { file } = request;
+  console.log(file);
+  return response.send();
+})
+```
+
+No insommia vamos criar nossa request post e no body vamos escolher "Multipart Form", por nossa rota "/categories/import" e por no campo "name" do Multipart "file" e no value, escolher "file".
+
+## Aula XLVII
+> Criando o Use Case  para Importar Categorias
+
+Dentro do diretório `useCases/` vamos criar o diretório do nosso useCase `importCategory/` e os três arquivos assim como nos demais useCases, sendo eles:
+- [] **ImportCategoryController.ts**
+- [] **ImportCategoryUseCase.ts**
+- [] **Index.ts**
+
+Vamos dar início por aqui criando nosso método handle na nossa classe controller, seguindo a mesma ideia de nomenclatura das classes feitas até aqui. no handle, nós recebemos o request e o reponse tipando nosso retorno como Response e recebemos nosso "file" do request => `const { file } = request`. Para visualizarmos o arquivo, damos um `console.log(file);` e um `return response.send();`.
+
+Para já integrarmos o nosso controller a nossa rota seguindo a estrutura aoresentada anteriormente vamos forerir se estamos exportando nosso controller importálo no index e exportálo para o categories.routes onde retornará o método hadle passando o request e o response.
+
+Agora vamos iniciar criando a nossa classe useCase e em seguida exportando-a para o controller e depois para o index como feito anteriormente em outros useCases.
+**importCategoryUseCase:**
+![](./assets/UseCase.png)
+> Criação o método execute passando o console.log(file).
+
+
+**importCategoryController:**
+![](./assets/controller.png)
+> pasando o useCase para o constructor possibilitando assimo uso do método execute do useCase, passando o file.
+
+
+**index:**
+![](./assets/index.png)
+> Aqui no index vamos apenas instanciar nossos objetos passando o use case pelo controller.
+
+Nesse momento podemos verificar se está tudo ok indo lá no insomnia.
+
+## Aula XLVIII
+> Conhecendo o conceito de stream
+
+Para a leitura do nosso arquivo vamos usar o conceito de stream, usando a biblioteca fs do próprio NodeJS. No fs iremos guardar em uma variável chamada `stream`, o retorno do método para criar leitura de stream, onde passamos como parâmetro o path do nosso arquivo. A variável stream retonará pedaços do nosso arquivo utilizando o método pipe como mostra a figura a baixo:
+
+![](assets/fs.png)
+
+Paraleitura do arquivo csv em si vamos utilizar outra biblioteca, a `csvParse`, onde vamos receber do método pipe os dados passando o objeto do csv-parse da seguinte maneira:
+
+![](assets/csv-parse.png)
+
+## Aula L
+> lendo os Dados do Upload
+
+Já conseguimos importar o arquivo, ler o arquivo, agora nosso objetivo será salvar os dados desse arquivo. para manipulação do nossos dados precisamos inicialmente importar nosso repositório, recebendo ele em nosso constructors e passando a sua tipagem: `constructor(private categoriesRepository: ICategoriesRepository) {}`. Assim que feito isso, vamos instanciá-lo no nosso arquivo index e passá-lo no useCase.
+```typescript
+const categoryRepository = CategoriesRepository.getInstance();
+const importCategoryUseCase = new ImportCategoryuseCase(categoryRepository);
+```
+
+Para guardar nossos dados vamos fazer a leitura e guardar primeiramente os dados e um array para em seguida passar para o repositório, paa isso vamos criar uma interface que vai receber os dados de name e description.
+
+```typescript
+interface IImportCategory {
+  name: string;
+  description: string;
+}
+```
+Inicializar array
+```typescript
+class ImportCategoryuseCase {
+  constructor(private categoriesRepository: ICategoriesRepository) {}
+
+  loadCategories(file: Express.Multer.File): Promise<IImportCategory[]> {
+    return new Promise((resolve, reject) => {
+      const stream = fs.createReadStream(file.path);
+      const categories: IImportCategory[] = []; // <==========================
+```
+
+```typescript
+class ImportCategoryuseCase {
+  constructor(private categoriesRepository: ICategoriesRepository) {}
+
+  loadCategories(file: Express.Multer.File): Promise<IImportCategory[]> { // Já que estamos trabalhando com Promisses, passamos a promisse como tipo e o tipo da promisse
+    return new Promise((resolve, reject) => { // criando promisse
+      const stream = fs.createReadStream(file.path);
+      const categories: IImportCategory[] = [];
+
+      const parseFile = csvParse();
+
+      stream.pipe(parseFile);
+
+      parseFile
+        .on("data", async (line) => {
+          const [name, description] = line;
+          categories.push({ // passando os dados para o array
+            name,
+            description,
+          });
+        })
+        .on("end", () => {       // quando finalizar
+          resolve(categories);   // retorne o array
+        })
+        .on("error", (err) => {  // tratando erro caso tenha
+          reject(err);
+        });
+    });
+  }
+  async execute(file: Express.Multer.File): Promise<void> { // Já que estamos trabalhando com Promisses, passamos a promisse como tipo e o tipo da promisse
+    const categories = await this.loadCategories(file);
+    console.log(categories);
+  }
+}
+```
+![](assets/retorno_upload.png)
+
+## Aula LI
+> Inserindo os Dados do Upload no Repositório
+
+Pra inserir as categorias no "banco de dados" vamos usar um map dentro do nosso arra, fazendo manipulação intem por item.
+```typescript
+categories.map(async (category) => {
+      const { name, description } = category; // desestruturação do objeto
+      
+      // fazendo validação
+      const existCategory = this.categoriesRepository.findByName(name); // buscando objeto
+
+      if (!existCategory) { // apenas se não existir salve-o em nosso banco de dados
+        this.categoriesRepository.create({
+          name,
+          description,
+        });
+      }
+    });
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
