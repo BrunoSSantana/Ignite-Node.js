@@ -61,6 +61,12 @@
 
 </details>
 
+<details>
+ <summary>DESAFIOS II</summary>
+
+ - [Desafio IV: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio04-trilha-node.js/)
+</details>
+
 ### Projetos Criados
 - [RENTALX](https://github.com/BrunoSSantana/rentalx)
 
