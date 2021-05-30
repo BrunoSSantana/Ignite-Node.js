@@ -1730,6 +1730,212 @@ parseFile
         });
 ```
 
+**CHAPTER III**
+
+## Aula LVI
+> Introdução ao Chapter III
+
+* Introdução ao Docker
+* Criando containers no Docker
+* Bancode dados no Docker
+* Comandos no Docker
+* Incremetnando a documentação 
+* Criptografias e senhas
+
+## Aula LVII
+> O que é Docker?
+
+* Ferramenta que auxilia a craição de containers (ambiente isolados da nossa máquina)
+* As "intruções" para criação desses ambientes isolados são chamados de **imagens**
+
+> O Docker é uma plataforma open source que facilita a criação e administração de ambientes isolados. Ele possibilita o empacotamento de uma aplicação ou ambiente dentro de um container, se tornando portátil para qualquer outro host que contenha o Docker instalado.
+
+![Docker](https://dkrn4sk0rn31v.cloudfront.net/2018/09/28135438/virtualization-vs-containers.jpg)
+
+### Containers
+
+Um container é um ambiente isolado. Um container contém um conjunto de processos que são executados a partir de uma imagem, imagem esta que fornece todos os arquivos necessários. Os containers compartilham o mesmo kernel e isolam os processos da aplicação do restante do sistema.
+
+**Por exemplo:** se você está desenvolvendo uma aplicação para um cliente, você pode fazer suas configurações nessa aplicação… Mas, em um ambiente convencional, você precisará replicar estas configurações para os outros ambientes de execução. Com o Docker, você estará fazendo isso em um ambiente isolado e, por causa da facilidade para replicação de containers, você acaba criando ambientes padronizados, tanto em desenvolvimento como em produção, por exemplo. 
+
+## Aula LVIII
+> Criando nosso peimeiro container e Dockerfile
+
+Passando a responsabilidade dos prerequisitos de instalação para o Docker, ficamos livres para nãos instalarmos pacotes como node, postgres, qualquer outro banco de dados, ou ferramenta que requeira sua instalação no computador.
+
+
+1. `touch .dockerignore` *Arquivos que serão ignorados pelo Docker*
+```
+node_modules
+.git
+.vscode
+assets
+README.md
+```
+2. `touch Dockerfile` *Esse arquivo serve como um receita de bolo para que o Docker saibar quais procedimentos devem ser feitos*
+```
+FROM node // buscando imagem do node
+
+WORKDIR /usr/app // Diretório de trabalho onde vai ser rodado no projeto
+
+COPY package.json ./ // primeiro argumento é o que vai ser copiado e o segundo é o seu destino no workdir
+
+RUN npm install // instalar as dependências criando o nodemodules
+
+COPY . . // copia tudo (.) para a raiz (.)
+
+EXPOSE 3333 // porta do nosso projeto
+
+CMD ["npm", "run", "dev"] // permite executar comandos onde são separados em uma lista de array
+```
+3. Executando nosso arquivo Dockerfile
+```bsh
+sudo docker build -t rentalx . // "retalx" = nomde da imagem que vamos criar, "." =  onde está o arquivo Dockerfile
+```
+4. Com a imagem criada vamos executála
+```bsh
+sudo docker run -p 3333:3333 rentalx // "-p 3333:3333" setando a portando do Docker e do nosso localhost "rentalx a imagem q será rodada"
+```
+5. Verificar nome do container
+```bsh
+sudo docker ps
+
+```
+6. Acesso ao container
+```bsh
+sudo docker -it 'nome do container' /bin/bash
+
+```
+
+## Aula LIX
+> Usando Docker-compose
+
+**Para que serve o DOcker-compose?**
+Ele funciona como um orquestrador de container, basicamente. Para realizar a comunicação entre os containers, podemos utilizar uma ferramenta do próprio Docker chamada de Docker Compose. Com o Docker Compose podemos criar um arquivo e especificar as propriedades de cada container, como comandos, variáveis de ambiente, etc.
+
+Utilizando  **Docker-compose**
+
+Na raiz do nosso projeto, vamos criar um arquivo chamado `docker-compose.yml` onde iremos passar as seguintes confirações:
+```yml
+version: "3.7"
+
+services:
+  app:
+    build: .
+    container_name: rentalx
+    ports: 
+      - 3333:3333
+    volumes: 
+      - .:/usr/app
+```
+
+E rodar os seguintes comandos
+
+Para executar  os containers em segundo plano:
+```yml
+sudo docker-compose up -d
+```
+Conferir o logs do docker:
+```yml
+sudo docker-compose logs nome_do_container -f
+```
+
+## Aula LX
+> Comandos do Docker
+
+Lista os containers em execução:
+```sh
+sudo docker ps
+```
+Lista todos os containers:
+```sh
+sudo docker ps -a
+```
+Remover container:
+```sh
+sudo docker rm id_do_container
+```
+Iniciar um container:
+```sh
+sudo docker start id_do_container
+```
+Para executar  os containers em segundo plano:
+```sh
+sudo docker-compose up -d
+```
+Parar container em execução:
+```sh
+sudo docker-compose stop
+```
+Executar container do docker-compose:
+```sh
+sudo docker-compose start
+```
+Remover docker-compose e seus serviços:
+```sh
+sudo docker-compose down
+```
+Para acessar o container:
+```sh
+sudo docker exec -it nome_do_container /bin/bash
+```
+Para sair do container:
+```sh
+CTRL + D
+```
+Conferir o logs do docker:
+```sh
+sudo docker-compose logs nome_do_container -f
+```
+Parar o log:
+```sh
+CTRL + C
+```
+
+## Aula LXI
+> Conhecendo as formas de usar o banco de dados
+
+Divrer Nativo: Dificulta a troca futura de um banco de dados
+Querry Bilders : Facilita uma possível troca de banco de dados
+ORM: Facilita uma possível troca de banco de dados, além de mapear nossas entidades trabalhando melhor com o banco de dados
+
+## Aula LXII
+> Instalando TypeORM
+
+Nesse momento vamos instalar além do typeorm, o reflect-metada como a documentação sugere e um banco de dados da nossa escolha.
+
+```sh
+yarn add typeorm reflect-metadata pg
+```
+
+Em seguida vamos criar um diretório no `src/`, chamado `database/`, onde nele vamos criar um arquivo index.ts com o seguinte código, onde estaremos estabelecendo nossa conexão.
+```typescript
+import { createConnection } from "typeorm";
+
+createConnection();
+```
+Agora vamos importar o nosso database para nosso server:
+```typescript
+import express from "express";
+import swaggerUi from "swagger-ui-express";
+
+import { router } from "./routes";
+import swaggerFile from "./swagger.json";
+
+import "./database";
+...
+```
+Dando sequência, vamos passar nossas configurações do banco de dados para um arquivo chamado `ormconfig.json` com a seguinte estrutura:
+```json
+{
+  "type": "postgres",
+  "host": "localhost",
+  "username": "docker",
+  "password": "ignite",
+  "database": "rentalx"
+}
+```
+
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
