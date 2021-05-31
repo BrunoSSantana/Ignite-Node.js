@@ -1937,6 +1937,67 @@ Dando sequência, vamos passar nossas configurações do banco de dados para um 
 ```
 
 
+## Aula LXII
+> Criando Container do postgres
+
+Vamos criar nosso banco de dados através do docker-compose e conectar o banco de dados ao app. Para isso vamos editar nosso arquivo `docker-compose.yml`:
+```yml
+version: "3.7"
+
+services:
+  database_ignite:
+    image: postgres
+    container_name: database_ignite
+    restart: always
+    ports: 
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=ignite
+      - POSTGRES_DB=rentalx
+    volumes:
+      - pgdata:/data/postgres
+
+  app:
+    build: .
+    container_name: rentalx
+    ports: 
+      - 3333:3333
+    volumes: 
+      - .:/usr/app
+    links: 
+      - database_ignite
+    depends_on: 
+      - database_ignite
+
+volumes:
+  pgdata:
+    driver: local
+```
+
+## Aula LXIII
+> Aprendendo o conceito de migrations
+
+As migrations é um versionamento para nosso banco de dados, onde vamos criar e alterar nossas tabelas pelas migrations criadas.
+
+## Aula LXIV
+> Criando Migration de Category
+
+Vamos iniciar criando um script como sugere a documentação para podermos executar a nossa `cli`:
+```JSON
+"srcipts": {
+  "typeorm": "ts-node-dev ./node_modules/typeorm/cli"
+}
+```
+Logo após, vamos criar dentro do diretório `database/` a pasta `migrations` onde serão criadas as migrations invocadas a partir da nossa cli. Para mapear essa pasta, nós vamos adicionar uma pequena configuração ao nosso aqrquivo `ormconfig.json`:
+```JSON
+"cli": {
+    "migrationsDir": "./src/database/migrations"
+  }
+```
+E para executar o comando criando a nossa migration CreateCategories: `yarn typeorm migration:create -n CreateCategories`.
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
