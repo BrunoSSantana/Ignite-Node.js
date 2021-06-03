@@ -1997,16 +1997,60 @@ Logo após, vamos criar dentro do diretório `database/` a pasta `migrations` on
 ```
 E para executar o comando criando a nossa migration CreateCategories: `yarn typeorm migration:create -n CreateCategories`.
 
+No nosso arquivo de migration, nós vamos iniciar a criação de tabela de categories, com a seguinte estrutur:
+```typescript
+import { MigrationInterface, QueryRunner, Table } from "typeorm";
+
+export class CreateCategories1622503323530 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createTable(
+      new Table({
+        name: "categories",
+        columns: [
+          {
+            name: "id",
+            type: "uuid",
+            isPrimary: true,
+          },
+          {
+            name: "name",
+            type: "varchar",
+          },
+          {
+            name: "description",
+            type: "varchar",
+          },
+          {
+            name: "created_at",
+            type: "timestamp",
+            default: "now()",
+          },
+        ],
+      })
+    );
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable("categories");
+  }
+}
+```
+Vamos verificar  a seguinte configuração:
+```JSON
+{
+  "migrations": ["./src/database/migrations/*.ts"],
+}
+```
+
+E para executar nossa migration:
+```sh
+yarn typeorm migration:run
+```
+Para desfazer:
+```sh
+yarn typeorm migration:revert
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
-
-
-
-
-
-
-
-
-
