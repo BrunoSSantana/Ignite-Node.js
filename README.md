@@ -2051,6 +2051,133 @@ Para desfazer:
 yarn typeorm migration:revert
 ```
 
+## Aula LXV
+> Refatorando o Model de Category
+
+Para que nosso ORM possa "mapear" nossas tabelas na aplicação recisamos ter algo parecido com o que na verdade já temos no nosso model, só que com o nome entities. Para isso vamos renomear nossa pasta model para entities e adicionar a seguinte estrutura nossa "Category":
+
+```typescript
+import { Column, CreateDateColumn, Entity, PrimaryColumn } from "typeorm";
+import { v4 as uuidv4 } from "uuid";
+
+@Entity("categories") // nome da tabela representada
+class Category {
+  @PrimaryColumn()
+  id?: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  description: string;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  constructor() {
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+  }
+}
+
+export { Category };
+```
+
+## Aula LXVI
+> Alterando o Repositório de Category
+
+Para podermos manipular o banco de dados, nosso ORM oferece o "Repository" que já possuem alguns métodos que podem ser usadas na nossa aplicação. No cassa desta aplicação já criamos os métodos a serem usados, por tanto vamos tornar nosso repository "private".
+
+```typescript
+private repository: Repository<Category>;
+
+private constructor() {
+  this.repository = getRepository(Category);
+}
+```
+
+Os métodos serão todos async, portanto, vamos alterar o tipo de retorno de todos para "Promise" do tipo que estava anteriormente.
+```typescript
+async create({ name, description }: ICreateCategoryDTO): Promise<void> {
+  const category = await this.repository.create({ // criando category
+    name,
+    description, // não é mais necessário criar a data de criação pois essa função está a cargo agora do nosso banco de dados
+  });
+
+  await this.repository.save(category); // salvando category
+}
+
+async list(): Promise<Category[]> {
+  const categories = await this.repository.find(); // buscando todas as categorias
+  return categories;
+}
+
+async findByName(name: string): Promise<Category> {
+  const category = await this.repository.findOne({ name }); // buscando por nome
+  return category;
+}
+```
+
+Em seguid vamos alterar a nossa interface:
+```typescript
+interface ICategoriesRepository {
+  findByName(name: string): Promise<Category>;
+  list(): Promise<Category[]>;
+  create({ name, description }: ICreateCategoryDTO): Promise<void>;
+}
+```
+
+## Aula LXVII
+> Refatorando o Caso de Uso de Category
+
+Primeiramente vamos refatorar nosso repositório onde vamos tirar nosso construtor do `private` e retirar a parte de `instance` ja que estaremos agora o nosso banco de dados.
+
+Agora no arquivo `index.ts` do `createCategory/` vamos alterar o import do nosso repository já que acbamos de alterar e transformar tudo em uma função onde teremos o cotrole de quando serrá executada.
+
+```typescript
+// [importações]
+export default (): CreateCategoryController => {
+  const categoriesRepository = new CategoriesRepository();
+
+  const createCategoryUseCase = new CreateCategoryUseCase(categoriesRepository);
+
+  const createCategoryController = new CreateCategoryController(
+    createCategoryUseCase
+  );
+  return createCategoryController;
+};
+```
+Na nossa rota, vamos fazer duas pequenas correções. A primeira refere-se a importação do `createCategoryController` onde tiramos as `{}` já que exportamos como `default`. A segunda alteração é na invocação `createCategoryController` como função, ficando da seguinte maneira .
+```typescript
+// [...]
+import createCategoryController from "../modules/cars/useCases/createCategory";
+// [...]
+categoriesRoutes.post("/", (request, response) => {
+  return createCategoryController().handle(request, response);
+});
+// [...]
+```
+Para que o código possa rodar sem ser feito todas as alterções na parte dos `category`, nos demais `useCase/` vamos atribuir o valor como null ao `categoriesRepository`. Próximo passo é corrigir as funções onde usamos de alguma forma o banco de dados ou onde passam as informações dele, tornando-os assícronos (Arquivos de useCase e conotroller).
+
+## Aula LXVIII
+> Entendendo as Alterações
+
+- Refatoração do repositório de categorias
+- Tirar a parte de instâncias pois agora não guardamos as informações em memória e sim no nosso banco de dados
+- Tirar o `private` do `constructor`
+- Envolver o `Controller` em uma função (instanciar apenas quando chamar)
+
+## Aula LXIX
+> Conhecendo TSyringe
+
+O TSyringe vai nos ajudar a fazer as injenções de dependêncis na nossa aplicação.
+
+**Instalar**
+```typescript
+yarn add tsyringe
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
