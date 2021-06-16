@@ -2178,6 +2178,86 @@ O TSyringe vai nos ajudar a fazer as injenções de dependêncis na nossa aplica
 yarn add tsyringe
 ```
 
+incluir configuraçõs do Typescript
+```JSON
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+  }
+}
+```
+Importar o reflect-metadata pra nosso "arquivo inicial"
+```typescript
+import "reflect-metadata";
+``` 
+
+Na pasta `src/` vamos criar `shared/container/index.ts` com a sguinte extrutura.
+
+```typescript
+import { container } from "tsyringe";
+
+import { CategoriesRepository } from "../../modules/cars/repositories/CategoriesRepository";
+import { ICategoriesRepository } from "../../modules/cars/repositories/Implementations/ICategoriesRepository";
+
+container.registerSingleton<ICategoriesRepository>(
+  "CategoriesRepository", // Nome da chamada
+  CategoriesRepository // Classe a ser chamada
+);
+```
+
+No arquivo CreateCategoryUseCase:
+
+```typescript
+@injectable() // Torna injetável pelo nosson controller, no caso
+class CreateCategoryUseCase {
+  constructor(
+    @inject("CategoriesRepository") // cria ferência com a classe
+    private categoriesRepository: ICategoriesRepository
+  ) {}
+
+```
+
+No arquivo CreateCategoryController:
+```typescript
+import { Request, Response } from "express";
+import { container } from "tsyringe";
+
+import { CreateCategoryUseCase } from "./CreateCategoryUseCase";
+
+class CreateCategoryController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    const { name, description } = request.body;
+    const createCategoryUseCase = container.resolve(CreateCategoryUseCase);
+
+    await createCategoryUseCase.execute({ name, description });
+
+    return response.status(201).send();
+  }
+}
+
+export { CreateCategoryController };
+```
+Podemos disconsiderar o nosso arquivo index.ts e ir as rotas:
+```typescript
+import { CreateCategoryController } from "../modules/cars/useCases/createCategory/CreateCategoryController"; // importando controller
+
+const createCategoryController = new CreateCategoryController();
+
+categoriesRoutes.post("/", createCategoryController.handle);
+```
+Chamar o container em nosso `server.ts`:
+```typescript
+import "reflect-metadata";
+import express from "express";
+import swaggerUi from "swagger-ui-express";
+
+import "./database";
+
+import "./shared/container";
+
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
