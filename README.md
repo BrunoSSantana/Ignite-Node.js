@@ -2258,6 +2258,166 @@ import "./shared/container";
 
 ```
 
+## Aula LXX
+> Refatorando as especificações
+
+Primeiramente vamos excluir o index na pastas `useCases/createCategory/`
+
+Agora vamos refatorar o restante dos Nossos useCases. O repositório das categorias já está pronto lá no nosso "container" do TSyringe então vamos criar o das especificações e avançar para os casos de uso. Assim como foi feito para a CategoriesRepository vamos fazer o seguinte para SpecificationsRepository da seguinte maneira:
+
+```typescript
+container.registerSingleton<ISpecificationsRepository>(
+  "SpecificationsRepository",
+  SpecificationsRepository
+);
+```
+
+Voltando para os casos de uso de categories, a princípio, nos nossos arquivos *CategoryUseCase.ts, vamos adicionar a seguinte estrutura:
+
+```typescript
+@injectable() // aqui torna a classe "injetável" onde vamos usar no no controller
+class ImportCategoryUseCase {
+  constructor(
+    @inject("CategoriesRepository") // "instancia" no repositório 
+    private categoriesRepository: ICategoriesRepository
+  ) {}
+```
+
+Vamos retirar os index de casa useCase e importar o controller no arqquivo de rotas da seguinte maneira:
+
+```typescript
+// [...]
+import { ListCategoriesController } from "../modules/cars/useCases/listCategories/ListCategoriesController";
+// [...]
+const listCategoriesController = new ListCategoriesController();
+categoriesRoutes.get("/", listCategoriesController.handle);
+```
+
+## Aula LXXI
+> Criando Migration de Especificações
+
+Migrations -> Entities -> Repository -> useCase -> Routes
+
+**Migrations**
+
+```sh
+yarn typeorm migration:create -n CreateSpecifications
+```
+
+Vamos seguir com a seguinte extrutura:
+```typescript
+import { MigrationInterface, QueryRunner, Table } from "typeorm";
+
+export class CreateSpecifications1623924126000 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createTable(
+      new Table({
+        name: "specifications",
+        columns: [
+          {
+            name: "id",
+            type: "uuid",
+            isPrimary: true,
+          },
+          {
+            name: "name",
+            type: "varchar",
+          },
+          {
+            name: "description",
+            type: "varchar",
+          },
+          {
+            name: "created_at",
+            type: "timestamp",
+            default: "now()",
+          },
+        ],
+      })
+    );
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable("specifications");
+  }
+}
+```
+**Entities**
+
+Após, rodar o comando `yarn typeorm migration:run` e estruturaremos as entidades de specifications assim:
+
+```typescript
+import { Column, CreateDateColumn, Entity, PrimaryColumn } from "typeorm";
+import { v4 as uuidv4 } from "uuid";
+
+@Entity("specifications")
+class Specification {
+  @PrimaryColumn()
+  id?: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  description: string;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  constructor() {
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+  }
+}
+
+export { Specification };
+```
+**Repository**
+
+```typescript
+class SpecificationsRepository implements ISpecificationsRepository { // modificar a interface colocando os retornos como "Promise<'tipo'>" 
+  private repository: Repository<Specification>;
+
+  constructor() {
+    this.repository = getRepository(Specification);
+  }
+
+  async create({ name, description }: ICreateSpecificationDTO): Promise<void> {
+    const specification = this.repository.create({
+      name,
+      description,
+    });
+
+    await this.repository.save(specification);
+  }
+
+  async findByName(name: string): Promise<Specification> {
+    const specification = await this.repository.findOne({
+      name,
+    });
+
+    return specification;
+  }
+}
+
+export { SpecificationsRepository };
+```
+
+**UseCase & Controller**
+
+Aqui vamos basicamente refatorar as funções em assíncronas quando necessário.
+
+**Routes**
+
+```typescript
+// [...]
+import { CreateSpecificationController } from "../modules/cars/useCases/createSpecification/CreateSpecificationController";
+// [...]
+const createSpecificationController = new CreateSpecificationController();
+
+specificationsRoutes.post("/", createSpecificationController.hadle);
+```
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
