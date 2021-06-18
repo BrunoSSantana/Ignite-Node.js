@@ -2600,6 +2600,112 @@ class User {
 export { User };
 ```
 
+## Aula LXXIV
+> Criando Repositório de Usuário
+
+Após criado nossa entidade, que será a comunicação com nosso banco de dados, iremos partir pra o repositório o qual irá trabalahar esse banco de dados. Primeiramente iremos criar dentro do módulo `accounts` os arquivos: `IUsersRepository.ts` no diretório `repositories/implementations/`; `UsersRepository.ts` no diretório `repositories/`; `ICreateUserDTO.ts` no diretório `dtos`.
+
+**`ICreateUserDTO.ts`:**
+```typescript
+interface ICreateUserDTO {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  driver_license: string;
+}
+
+export { ICreateUserDTO };
+```
+
+**`IUsersRepository.ts`:**
+```typescript
+import { ICreateUserDTO } from "../../dtos/ICreateUserDTO";
+
+interface IUsersRepository {
+  create(data: ICreateUserDTO): Promise<void>;
+}
+
+export { IUsersRepository };
+```
+
+**`UsersRepository.ts`:**
+```typescript
+import { getRepository, Repository } from "typeorm";
+
+import { ICreateUserDTO } from "../dtos/ICreateUserDTO";
+import { User } from "../entities/User";
+import { IUsersRepository } from "./implementations/IUsersRepository";
+
+class UserRepository implements IUsersRepository {
+  private repository: Repository<User>; // Informamos do que vi se tratar o repositório
+
+  constructor() {
+    this.repository = getRepository(User); // pegamos o repositório user e métodos do typeorm para serem 
+  }
+  async create({ // função assíncrona que cria o novo usuário
+    name,
+    username,
+    email,
+    password,
+    driver_license,
+  }: ICreateUserDTO): Promise<void> {
+    const user = this.repository.create({
+      name,
+      username,
+      email,
+      password,
+      driver_license,
+    });
+
+    await this.repository.save(user); // salvando o usuário
+  }
+}
+
+export { UserRepository };
+```
+Com  a parte dos repositórios finalizada, vamos dá cntinuidade com os useCases. no nosso diretório de `accounts` vamos criar `useCases/createUser/` e aí os arquivos de `useCase` e `controller`. Além desses arquivos precisamos preparar nosso container que fica dentro a pasta `shared/`, no nosso inde.ts iremos repetir a ideia a já viemos fazendo. No nosso arquivo **`CreateUserUseCase.ts`** vamos seguir a seguinte estrutura:
+```typescript
+import { inject, injectable } from "tsyringe";
+
+import { ICreateUserDTO } from "../../dtos/ICreateUserDTO";
+import { IUsersRepository } from "../../repositories/implementations/IUsersRepository";
+
+injectable();
+class CreateUserUseCase {
+  constructor(
+    @inject("UserRepository")
+    private usersRepository: IUsersRepository
+  ) {}
+
+  async execute({
+    name,
+    username,
+    email,
+    password,
+    driver_license,
+  }: ICreateUserDTO): Promise<void> {
+    await this.usersRepository.create({
+      name,
+      username,
+      email,
+      password,
+      driver_license,
+    });
+  }
+}
+
+export { CreateUserUseCase };
+```
+**`container/index.ts`:**
+```typescript
+container.registerSingleton<IUsersRepository>(
+  "UserRepository",
+  UserRepository
+);
+```
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
