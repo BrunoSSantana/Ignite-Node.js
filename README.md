@@ -2498,6 +2498,108 @@ Para criar agora a documentação do nosso **Import Category** vamos adicionar m
 ```
 Aqui novamente podemos conferir se está tudo ok indo na rota de listagem e verificando se conseguimos importar os dados do nosso arquivo.
 
+## Aula LXXIII
+> Criando Migration de Usuário
+
+Não muito diferente do que já foi feito, vamos criar agora uma migration para criar a tabela de usuários onde teremos os campos de: id, name, username, email, password, driver_license, isAdmin e created_at como mostra a seguir.
+```typescript
+import { MigrationInterface, QueryRunner, Table } from "typeorm";
+
+export class CreateUsers1623974939522 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createTable(
+      new Table({
+        name: "users",
+        columns: [
+          {
+            name: "id",
+            type: "uuid",
+          },
+          {
+            name: "name",
+            type: "varchar",
+          },
+          {
+            name: "username",
+            type: "varchar",
+            isUnique: true, // Apenas um usuário por username
+          },
+          {
+            name: "password",
+            type: "varchar",
+          },
+          {
+            name: "email",
+            type: "varchar",
+          },
+          {
+            name: "driver_license",
+            type: "varchar",
+          },
+          {
+            name: "isAdmin",
+            type: "boolean",
+            default: "false", // por padrão é falso
+          },
+          {
+            name: "created_at",
+            type: "timestamp",
+            default: "now()",
+          },
+        ],
+      })
+    );
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable("users");
+  }
+}
+```
+Podemos rodar o comando `yarn typeorm migration:run` e após verificar a criação da tabela no banco de dados.
+
+Logo depois da criação das migrations, vamos criar nossa entidade, antes dissso, na nossa pasta modules vamos criar o módulos `accounts/` e nele o diretório `entities/` e então nosso arquivo `User.ts` onde vamos seguir com uma estrutura bem parecido com a qual já trabalhamos.
+
+```typescript
+import { Column, CreateDateColumn, Entity, PrimaryColumn } from "typeorm";
+import { v4 as uuidv4 } from "uuid";
+
+@Entity()
+class User {
+  @PrimaryColumn()
+  id: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  username: string;
+
+  @Column()
+  email: string;
+
+  @Column()
+  password: string;
+
+  @Column()
+  driver_license: string;
+
+  @Column()
+  isAdmin: boolean;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  constructor() {
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+  }
+}
+
+export { User };
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
