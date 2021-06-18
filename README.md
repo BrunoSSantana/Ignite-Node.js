@@ -2418,6 +2418,86 @@ const createSpecificationController = new CreateSpecificationController();
 
 specificationsRoutes.post("/", createSpecificationController.hadle);
 ```
+## Aula LXXII
+> Continuação da Documentação
+
+Continuando aqui na documentação, vamos adicionar mais um path, o `"/specifications"` com a seguinte estrutura:
+```JSON
+"paths": {
+    "/specifications": {
+      "post": {
+        "tags": ["Specifications"],
+        "summary":"Create a specification",
+        "description": "Create a new specification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/definitions/Specification" // fazendo referencia a definition uma forma de reduzir linhas caso tenha uma parte que da documentaçã onde alguma parte se repete
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "500": {
+            "description": "Specification already exists!"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Specification": {
+      "type": "object",
+      "properties":{
+        "name": {
+          "type":"string"
+        },
+        "description": {
+          "type":"string"
+        }
+      }
+    }
+  }
+```
+
+Em seguida podemos testar na documentação se está funcionando e verificar se recebemos no banco de dados.
+
+Para criar agora a documentação do nosso **Import Category** vamos adicionar mais um path, o `/categories/import` com a estrutur a seguir:
+```JSON
+"/categories/import": {
+  "post": {
+    "tags": ["Category"], // Apontando para seção de categorias
+    "summary": "Upload a new category",
+    "description": "Upload a new category",
+    "requestBody": {
+      "content": {
+        "multipart/form-data": { // configuração  para importar nosso arquivo 
+          "schema": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Created"
+      }
+    }
+  }
+}
+```
+Aqui novamente podemos conferir se está tudo ok indo na rota de listagem e verificando se conseguimos importar os dados do nosso arquivo.
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
