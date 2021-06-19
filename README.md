@@ -2746,6 +2746,11 @@ function async findByEmail(email: string): Promise<User> {
 }
 ```
 
+## Aula LXXVIII
+> Entendendo Antenticação com JWT
+
+Hoje não tems o controle para saber se o usuário está ou não logado na nossa aplicação, para ter umcontrole maior nobre nosso usuário, sobre "quem tá fazendo o que". Para abordar esse problema vamos utilizar o JWT (Json Web Token). No momento que o usuário passa a senha e verificamos que ela está correta, geramos este token onde passamos algumas informações nesses tokens, mas nunca informações senssíveis.
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
