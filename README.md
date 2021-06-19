@@ -2751,6 +2751,130 @@ function async findByEmail(email: string): Promise<User> {
 
 Hoje não tems o controle para saber se o usuário está ou não logado na nossa aplicação, para ter umcontrole maior nobre nosso usuário, sobre "quem tá fazendo o que". Para abordar esse problema vamos utilizar o JWT (Json Web Token). No momento que o usuário passa a senha e verificamos que ela está correta, geramos este token onde passamos algumas informações nesses tokens, mas nunca informações senssíveis.
 
+## Aula LXXIX
+> Criando Token do Usuário
+
+Vamos iniciar aqui adicionando a biblioteca `jsonwebtoken`:
+```sh
+yarn add jsonwebtoken
+yarn add @types/jsonwebtoken -D
+```
+
+Adicionamos o diretório `authenticateUser/` a pasta `useCases/`, onde vamos criar os arquivos de useCase e Controller, `AuthenticateUserUseCase.ts` e `AuthenticateUserController.ts`.
+
+**`AuthenticateUserUseCase.ts`:**
+```typescript
+import { compare } from "bcrypt";
+import { sign } from "jsonwebtoken";
+import { inject, injectable } from "tsyringe";
+
+import { IUsersRepository } from "../../repositories/IUsersRepository";
+
+// Interfaces
+
+interface IRequest {
+  email: string;
+  password: string;
+}
+
+interface IResponse {
+  user: {
+    name: string;
+    email: string;
+  };
+  token: string;
+}
+
+@injectable() 
+class AuthenticateUserUseCase {
+  constructor(
+    @inject("UsersRepository")
+    private usersRepository: IUsersRepository
+  ) {}
+
+  async execute({ email, password }: IRequest): Promise<IResponse> {
+    // Autentificação de usuário
+    const user = await this.usersRepository.findByEmail(email);
+
+    if (!user) {
+      throw new Error("Email or password incorrect!");
+    }
+
+    // Autentificação de senha
+    const passwordMatch = await compare(password, user.password);
+
+    if (!passwordMatch) {
+      throw new Error("Email or password incorrect!");
+    }
+
+    // Gerando Token
+    const token = sign({}, "7f0a80fe059648190ad441eff2bf0dae", // md5
+    {
+      subject: user.id, // id
+      expiresIn: "1d", // tempo de experição
+    });
+
+    const tokenReturn: IResponse = { // Repassando apenas os dados revelantes do usuário junto ao token
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+      },
+    };
+
+    return tokenReturn;
+  }
+}
+
+export { AuthenticateUserUseCase };
+```
+
+**`AuthenticateUserController.ts`**
+```typescript
+import { Request, Response } from "express";
+import { container } from "tsyringe";
+
+import { AuthenticateUserUseCase } from "./AuthenticateUserUseCase";
+
+class AuthenticateUserController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    const { password, email } = request.body;
+
+    const authenticateUserUseCase = container.resolve(AuthenticateUserUseCase);
+
+    const token = await authenticateUserUseCase.execute({
+      password,
+      email,
+    });
+
+    return response.json(token);
+  }
+}
+
+export { AuthenticateUserController };
+```
+
+Com o useCase e controller finalizados vamos nos encaminhar para criação da rota. Para isso vamos criar o arquivo `authenticate.routes.ts` na pasta `routes/` com uma extrutura já bastante semelhante das criadas anterioemnte.
+```typescript
+import { Router } from "express";
+
+import { AuthenticateUserController } from "../modules/accounts/useCases/authenticateUser/AuthenticateUserController";
+
+const authenticateRoutes = Router();
+
+const authenticateUserController = new AuthenticateUserController();
+authenticateRoutes.post("/sessions", authenticateUserController.handle);
+
+export { authenticateRoutes };
+```
+E finalizando trazendo esta rota para o nosso `index.ts` do diretório `routes/`.
+```typescript
+// [...]
+import { authenticateRoutes } from "./authenticate.routes";
+// [...]
+router.use(authenticateRoutes);
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
