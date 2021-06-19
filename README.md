@@ -2704,7 +2704,47 @@ container.registerSingleton<IUsersRepository>(
   UserRepository
 );
 ```
+## Aula LXXVII
+> Criptografar senha
 
+Aqui no banco de dados a nossa senha está totalmente exposta dando brechas para algum mal intensionado fazer qualquer operação. Para não deixar nossas senhas expostas dessa maneira iremos usar uma biblioteca, a bcrypt, que irá criptografar nossa senha antes de salvar no banco de dados. Para isso iremos importa a função hash, da lib bcrypt, no arquivo CreateUserUseCase.ts, usar a função hash no nosso password e salva-la.
+
+```typescript
+import { hash } from "bcrypt";
+// [...]
+
+function async execute({ name, email, password, driver_license }: ICreateUserDTO): Promise<void> {
+
+  const passwordHash = await hash(password, 8); // esse "8" seria o número de vezes que embaralhamos esses caracteres
+
+  await this.usersRepository.create({
+    name,
+    email,
+    password: passwordHash,
+    driver_license,
+  });
+}
+// [...]
+```
+
+Podemos notar que estamos salvando emails iguais, para evitar isso vamos fazer uma simples validação antes de salvar o email e criar mais um método para classe `UsersRepository`, o `findByEmail()`.
+
+**CreateUserUseCase.ts**
+```typescript
+const userAlreadyExists = await this.usersRepository.findByEmail(email);
+
+if (userAlreadyExists) {
+  throw new Error("Users already Exists");
+}
+```
+**UsersRepository.ts**
+```typescript
+function async findByEmail(email: string): Promise<User> {
+  const user = await this.repository.findOne({ email });
+
+  return user;
+}
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
