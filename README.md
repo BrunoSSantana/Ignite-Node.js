@@ -2874,6 +2874,67 @@ import { authenticateRoutes } from "./authenticate.routes";
 // [...]
 router.use(authenticateRoutes);
 ```
+## Aula LXXX
+> Autenticação das Rotas
+
+Agora limitar o acesso de alguns usuários a algumas de nossas rotas utilizando o nosso token. Para isso vamo criar um middleware que vai sempre verificar se é um token válido para realizarmos a nossa requisição, se o usuário existe. Nesse sentido, na pasta `src/`, vamos iniciar criando uma `pastamiddlewares/` e nela o arquivo `ensureAuthenticated.ts`.
+
+Antes de criarmos o nosso middleware, precisamos criar o método `findById()` no nosso repository. NO arquivo `IUsersRepository.ts` vamos adicionar a nossa interface o trecho: `findById(id: string): Promise<User>;` e no **`UsersRepository.ts`**:
+```typescript
+  async findById(id: string): Promise<User> {
+    const user = await this.repository.findOne(id);
+
+    return user;
+  }
+```
+E finalmente...
+**`ensureAuthenticated.ts`:**
+```typescript
+import { NextFunction, Request, Response } from "express";
+import { verify } from "jsonwebtoken";
+
+import { AppError } from "../errors/AppErrors";
+import { UsersRepository } from "../modules/accounts/repositories/implementations/UsersRepository";
+
+interface IPayload {
+  sub: string;
+}
+
+export async function ensureAuthenticated(
+  request: Request,
+  response: Response,
+  next: NextFunction // Função obrigatória em qualquer middleware
+): Promise<void> {
+  const authHeader = request.headers.authorization; // buscando token => "Bearer jdhaskdnaosidjasjdask"
+
+  if (!authHeader) { // se não existir token emitimos um erro
+    throw new AppError("Token missing", 401);
+  }
+
+  const [, token] = authHeader.split(" "); // desestruturando nosso token. dividindo com split onde aparecer um espaço em branco e vamos capturar apenas o segundo parâmentro
+
+  try {
+    // na função verify, passamos 2 parâmetros, o token e a chave secretea que foi passado para criação do token
+    const { sub: user_id } = verify(
+      token,
+      "7f0a80fe059648190ad441eff2bf0dae"
+    ) as IPayload; // com essa interface nós informamos o tipo de retorno que retemos 
+
+    const usersRepository = new UsersRepository();
+    const user = usersRepository.findById(user_id); // buscando usuário pelo id que encontramos no token
+
+    if (!user) { // se não existir retornamos um erro
+      throw new AppError("User does not exists!", 401);
+    }
+
+    next();
+  } catch (error) {
+    throw new AppError("Invalid token", 401);
+  }
+}
+```
+
+
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
