@@ -4094,6 +4094,173 @@ it("should be able to create a new car", async () => {
   expect(car).toHaveProperty("id");
 });
 ```
+
+## Aula XCVI
+> Estruturando a Entidade de Carros
+
+Nessa aula vamos integrar o typeorm nessa parte da aplicação começando com a nossa entidade Car.
+
+```ts
+// Fazendo referencia a tabela cars criada no migration:run
+@Entity("cars")
+class Car {
+  @PrimaryColumn()
+  id: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  description: string;
+
+  @Column()
+  daily_rate: number;
+
+  @Column()
+  available: boolean;
+
+  @Column()
+  license_plate: string;
+
+  @Column()
+  fine_amount: number;
+
+  @Column()
+  brand: string;
+
+  // chave estrangeira
+  // muitos carros para uma categoria - ManyToOne
+  @ManyToOne(() => Category)
+  // Referenciando Coluna
+  @JoinColumn({ name: "category_id" })
+  category: Category;
+
+  // chave estrangeira
+  @Column()
+  category_id: string;
+
+  // cria 
+  @CreateDateColumn()
+  created_at: Date;
+  // cria data
+  constructor() {
+    if (!this.id) {
+      this.id = uuidv4();
+      // seta availabel como true
+      this.available = true;
+    }
+  }
+}
+export { Car };
+```
+
+Agora podemos criar a classe'que será responssável por fazer a comunicação com o banco de dados o `CarsRepository`. Então na pasta repositories do módulo `cars` vamos criar o arquivo `CarsRepository.ts` com a seguinte estrutura:
+
+```ts
+// implementação do ICarsRepository
+class CarsRepository implements ICarsRepository {
+  // Cria a propriedade repository informando que el é do tipo repository do typeorm
+  private repository: Repository<Car>;
+
+  // Pega o repositório Car e no this.repository
+  constructor() {
+    this.repository = getRepository(Car);
+  }
+
+  // Restante do código é parecido ao repositório in-memory
+
+  async create({
+    brand,
+    category_id,
+    daily_rate,
+    description,
+    fine_amount,
+    license_plate,
+    name,
+  }: ICreateCarDTO): Promise<Car> {
+    const car = this.repository.create({
+      brand,
+      category_id,
+      daily_rate,
+      description,
+      fine_amount,
+      license_plate,
+      name,
+    });
+
+    this.repository.save(car);
+
+    return car;
+  }
+  async findByLicensePlate(license_plate: string): Promise<Car> {
+    const car = await this.repository.findOne({ license_plate });
+    return car;
+  }
+}
+export { CarsRepository };
+```
+
+Agora vamos descomentar a parte do useCase que estava comentado o `@inject("CarsRepository")` e o `injectable()`
+
+E finalmente para automatizar nosso instanciamento vamos usar os containers do tsyringe. No diretório `shared/container/` vamos adionar ao arquivo index a seguinte estrutura:
+
+```ts
+container.registerSingleton<ICarsRepository>("CarsRepository", CarsRepository);
+```
+Agora vamos para o controller.
+```ts
+class CreateCarController {
+  // tipando o request e o response do express
+  async handle(request: Request, response: Response): Promise<Response> {
+    const {
+      brand,
+      category_id,
+      daily_rate,
+      description,
+      fine_amount,
+      license_plate,
+      name,
+    } = request.body;
+    // chamando o createCaUseCase
+    const createCarUseCase = container.resolve(CreateCarUseCase);
+    // executando  
+    const car = await createCarUseCase.execute({
+      brand,
+      category_id,
+      daily_rate,
+      description,
+      fine_amount,
+      license_plate,
+      name,
+    });
+    // retornado o objeto de car
+    return response.status(201).json(car);
+  }
+}
+export { CreateCarController };
+```
+Finalmente chegamos nas rotas. Então em `shared/infra/http/routes/` vamos criar o arquivo `cars.routes.ts` com a seguinte estrutura:
+
+```ts
+import { Router } from "express";
+import { CreateCarController } from "@modules/cars/useCases/createCar/CreateCarController";
+
+const carsRoutes = Router();
+// Instanciando o createController
+const createCarController = new CreateCarController();
+carsRoutes.post("/", createCarController.handle);
+
+export { carsRoutes };
+```
+
+E chamar essa rota no index desse diretório
+```ts
+import { carsRoutes } from "./cars.routes";
+// ... RESTO DO CÓDIGO
+router.use("/cars", carsRoutes);
+```
+Finlizamos testanto o código no insomnia
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
