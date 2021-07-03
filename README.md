@@ -3576,8 +3576,7 @@ Regras de negócio são critérios e restrições informados são regras, e regr
 
 **RF**
 
-- Devev ser possível cadastrar um novo carro
-- Devev ser possível listar toas as categorias
+- Deve ser possível cadastrar um novo carro
 
 **RN**
 
@@ -3640,6 +3639,11 @@ Regras de negócio são critérios e restrições informados são regras, e regr
 - O aluguel deve ter duração mínima de 24 horas.
 - Não deve ser possível cadastrar um novo alugel caso já exista um aberto  parao mesmo usuário
 - Não deve ser possível cadastrar um novo alugel caso já exista um aberto  parao mesmo carro
+
+## Aula XCII
+> Alterando a importação dos repositórios
+
+Aqui vamos corrigir as importações que não estão seguindo nosso padrão os arquivos de repositório em memória e remover as pastas de implementação.
 
 ## Aula XCIII
 > Criando migrations do carro
@@ -3748,6 +3752,179 @@ export class CreateCars1625310735313 implements MigrationInterface {
 }
 ```
 
+## Aula XCIV
+> TDD na Prática
+
+Vamos começar criando nossos casos de uso um oouco diferente, vamos iniciar com os testes, vamos usar a metodologia TDD.
+
+1 - Escrevemos um teste simples (que vai falhar)
+
+2 - Fazemos ele passar
+
+3 - Refatoramos (adicionando regras de negócios e validações)
+
+No módulo `cars/` vamos adicionar ao diretório `useCases/` uma pasta `createCar/` com os arquivos: `CreateCarUseCase.spec.ts` `CreateCarUseCase.ts`
+
+**`CreateCarUseCase.ts`:**
+```ts
+// o que a método execute vai receber ⤵
+interface IRequest {
+  name: string;
+  description: string;
+  daily_rate: number;
+  license_plate: string;
+  fine_amount: number;
+  brand: string;
+  category_id: string;
+}
+
+@injectable()
+class CreateCarUseCase {
+  // Aqui eu digo que essa classe deve ser instanciada recebendo o objeto do tipo ICarsRepository 👍
+  constructor(
+    @inject("CarsRepository")
+    private carsRepository: ICarsRepository
+  ) {}
+
+  async execute({
+    // recebendo do usuário
+    brand,
+    category_id,
+    daily_rate,
+    description,
+    fine_amount,
+    license_plate,
+    name,
+  }: IRequest): Promise<void> {
+    // esse carsRepository que vai ser instanciado terá um método create no qual vai receber ICreateDTO
+    this.carsRepository.create({
+      brand,
+      category_id,
+      daily_rate,
+      description,
+      fine_amount,
+      license_plate,
+      name,
+    });
+  }
+}
+export { CreateCarUseCase };
+
+```
+
+**`CreateCarUseCase.spec.ts`:**
+```ts
+// criando as varáveis para serem instanciadas
+let createCarUseCase: CreateCarUseCase;
+let carsRepositoryInMemory: CarsRepositoryInMemory;
+
+describe("Create Car", () => {
+  // antes de cada teste faça isso ⬇️
+  beforeEach(() => {
+    // instanciando useCase e o repositório
+    carsRepositoryInMemory = new CarsRepositoryInMemory();
+    // Classe responssável por manipular os dados
+    createCarUseCase = new CreateCarUseCase(carsRepositoryInMemory);
+  });
+
+  it("should be able to create a new car", async () => {
+    // executando o método
+    await createCarUseCase.execute({
+      brand: "Brand",
+      category_id: "category",
+      daily_rate: 100,
+      description: "Description Car",
+      fine_amount: 60,
+      license_plate: "ABC-1234",
+      name: "Name Car",
+    });
+  });
+});
+```
+No diretório `repositories/` vamos criar o arquivo `ICarsRepository.ts`.
+
+Aqui vai a interface do nosso repositório, que é uma forma de tipar uma classe/objeto para que o nosso constructor saiba o que vai entrar, quais os métodos que podem ser chamados e o que eles vão receber.
+**`ICarsRepository.ts`:**
+```ts
+import { ICreateCarDTO } from "../dtos/ICreateCarDTO";
+
+interface ICarsRepository {
+  // no método create vamos receber dados do tipo *ICreateCarDTO* que é outra interface que vai dizer quais e de que tipo são
+  // o retorno será uma promise vazia, ou seja esse será um método async sem retorno
+  create(data: ICreateCarDTO): Promise<void>;
+}
+export { ICarsRepository };
+```
+No diretório do módulo `cars` vamos criar a pasta `dtos/` onde vamos criar o seguinte arquivo.
+
+**`ICreateDTO.ts`:**
+
+```ts
+interface ICreateCarDTO {
+  name: string;
+  description: string;
+  daily_rate: number;
+  license_plate: string;
+  fine_amount: number;
+  brand: string;
+  category_id: string;
+}
+export { ICreateCarDTO };
+```
+Na pasta repositories, criamos o diretório `in-memory/` onde vamos criar a classe `CarsRepositoryInMemory`.
+
+O CarsRepositoryInMemory será nosso repositório que vamos criar para executar nossos testes. Nele vamos implementar o ICarsrepository e as informações serão armazenadas em um array, ou seja na memória.
+
+**`CarsRepositoryInMemory`:**
+```ts
+//implementamos o ICarsRepository
+class CarsRepositoryInMemory implements ICarsRepository {
+  // criamos um array do tipo Car (Entidade de Car)
+  cars: Car[] = [];
+  // método que irá criar o car enviando-o o array cars
+  async create({
+    brand,
+    category_id,
+    daily_rate,
+    description,
+    fine_amount,
+    license_plate,
+    name,
+  }: ICreateCarDTO): Promise<void> {
+    // instanciando car
+    const car = new Car();
+    // colocando os dados recebidos dentro do objeto car
+    Object.assign(car, {
+      brand,
+      category_id,
+      daily_rate,
+      description,
+      fine_amount,
+      license_plate,
+      name,
+    });
+    // enviando para o array cars
+    this.cars.push(car);
+  }
+}
+export { CarsRepositoryInMemory };
+```
+A entidade, semelhante a interface vai dizer a forma daquele objeto, como será moldado. Ele será criado em `cars/infra/typeorm/entities/`.
+
+```ts
+class Car {
+  id: string;
+  name: string;
+  description: string;
+  daily_rate: number;
+  license_plate: string;
+  fine_amount: number;
+  brand: string;
+  category_id: string;
+  created_at: Date;
+}
+export { Car };
+```
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
