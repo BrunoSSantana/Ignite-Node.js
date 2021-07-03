@@ -2933,7 +2933,693 @@ export async function ensureAuthenticated(
   }
 }
 ```
+## Aula LXXXI
+> Tratamento de exceções
 
+O objetivo nesse momento é que a api repasse os erros que aparecerem, fazendo com que o erro não cai no log e a aplicação não pare.
+
+Vamos iniciar criando dentro de `src/` a pasta `errors/` e nela o arquivo `AppErrors`.
+**`AppErrors`:**
+```typescript
+export class AppError {
+  public readonly message: string; // propriedade apenas para leitura
+
+  public readonly statusCode: number; // propriedade apenas para leitura
+
+  constructor(message: string, statusCode = 400) { // setando o statusCode em 400
+    this.message = message; // propriedade message recebe message passada no constructor
+    this.statusCode = statusCode; // propriedade statusCode recebe statusCode passada no constructor
+  }
+}
+```
+Agora vamos substitutir todos os `Erros` em nosso código pelo `AppError`. Nos erros do arquivo `ensureAuthenticated.ts` vamos por o código 401 em todos, pois se trata de autorização, da seguinte maneira: `throw new AppError("Token missing", 401);`.
+
+Vamos criar agora um middleare para que o erro consiga ser repassado para frente. No server, depois das rotas, vamos criar:
+```typescript
+// [...]
+import { AppError } from "./errors/AppErrors";
+
+// [...]
+app.use(
+  (err: Error, request: Request, response: Response, next: NextFunction) => { // em middleware de erro sempre passamos o Error primeiro
+    if (err instanceof AppError) { // se o erro for um AppError
+      return response.status(err.statusCode).json({ // retornamos no satus, o statusCode que passamos no AppError
+        message: err.message, // e a mensagem também
+      });
+    }
+    // Se o erro for de qualquer outro tipo
+    return response.status(500).json({ // erro da aplicação que não temos controle
+      status: "error",
+      message: `Internal server error - ${err.message}`,
+    });
+  }
+);
+```
+E para finalmente concluir a missão de repassar os erros, vamos instalar a lib `express-asyndc-errors` com o comando `yarn add express-async-errors`. Para utilizar, vamos importar essa lib no nosso `server.ts` após o express.
+
+## Aula LXXXII
+> Adcionando Coluna de Avatar
+
+Para armazenar os arquivos de imagem de avatar, vamos utilizar os storages para armazenar o arquivo e reverenciar esse por uma url em nosso banco de dados para podemos está recuperando esse arquivo quando necessário. Esse processo recomendável devido ao peso desse tipo de arquivo em nosso banco podendo tornar mais pesado e afetando  o desempenho.
+
+Antes de adicionar a coluna, na pasta de `accounts/useCases/` vamos adiccionar o diretório `updateUserAvatar/` e nele o arquivo `UpdateUserAvatarUseCase.ts` com a seguinte estrutura:
+
+```typescript
+class UpdateUserAvatarUseCase {
+  async execute() {}
+}
+
+export { UpdateUserAvatarUseCase };
+```
+Em seguida, vamos delimitar quando serão os próximos passos.
+
+- [] Adicionar coluna avatar na tabela de users
+- [] Refatorando usuário com coluna avatar
+- [] Configuração upload multer
+- [] Criar regra de negócio do upload
+- [] Criar Controller
+
+Vamos prosseguir adicionando a coluna avatar na tabela de usuário, para isso vamos criar uma migration do nosso typeorm e sequência executar a mesma. Para criar nossa migration, vamos executar o seguinte comando: `yarn typeorm migration:create -n AlterUserAddAvatar`. A estrutura da migration deve seguir o seguinte padrão:
+
+```typescript
+import { MigrationInterface, QueryRunner, TableColumn } from "typeorm";
+
+export class AlterUserAddAvatar1624201713726 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.addColumn(
+      "users",
+      new TableColumn({
+        name: "avatar",
+        type: "varchar",
+        isNullable: true,
+      })
+    );
+  }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropColumn("users", "avatar");
+  }
+}
+```
+
+Executando migration: `yarn typeorm migration:run`
+
+Após a execução da nossa migration, podemos verificar a alteração no nosso banco de dados. Além disso, vamos refatorar nossa entidade `User`, adicionando a coluna `avatar` do tipo *string*. E agora vamos adicionar o nosso avatar ao banco de dados no arquivo de useCase da seguinte maneira:
+```typescript
+import { inject, injectable } from "tsyringe";
+import { IUsersRepository } from "@modules/accounts/repositories/IUsersRepository";
+
+interface IRequest {
+  user_id: string;
+  avatar_file: string;
+}
+
+@injectable()
+class UpdateUserAvatarUseCase {
+  constructor(
+    @inject("UsersRepository")
+    private usersRepository: IUsersRepository
+  ) {}
+
+  async execute({ user_id, avatar_file }: IRequest): Promise<void> {
+    const user = await this.usersRepository.findById(user_id);
+
+    user.avatar = avatar_file;
+
+    await this.usersRepository.create(user);
+  }
+}
+export { UpdateUserAvatarUseCase };
+```
+Para recebermos o nosso usuário na requisição do controller, vamos aproveitar o middleware de autentificação para que ele passe a informação do usuário. Para podermos fazer uso da informação vinda do middleware, é preciso passar o objeto para o `request`, para evitar erros de tipagens, vamos adicionar a tipagem do `request` o nosso objeto `user` que será passado, para isso, vamos adicionar ao diretório `src/`, a pasta `@types/` e nela a pasta `express/` com o arquivo `index.d.ts` onde iremos alterar a tipagem do `request`.
+
+**`index.d.ts`:**
+```typescript
+declare namespace Express {
+  export interface Request {
+    user: {
+      id: string;
+    }
+  }
+}
+```
+
+Daí então, já pomos capturar o user.id no controller:
+
+**`UpdateUserAvatarController`:**
+```typescript
+import { Request, Response } from "express";
+import { container } from "tsyringe";
+
+import { UpdateUserAvatarUseCase } from "./UpdateUserAvatarUseCase";
+
+class UpdateUserAvatarController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    const { id } = request.user;              // desestruturando request e capturando id do usuário
+
+    // Recebendo arquivo
+    const avatar_file = null;
+
+    const updateUserAvatarUseCase = container.resolve(UpdateUserAvatarUseCase);
+
+    await updateUserAvatarUseCase.execute({ user_id: id, avatar_file });
+
+    return response.status(204).send();
+  }
+}
+export { UpdateUserAvatarController };
+```
+
+Agora no `users.routes.ts`, vamos utilizar o método `patch` e para o upload do avatar vamos utulizar novament eo multer, o qual funciona como um middleware, para permanecermos com um bom código, vamos configurar o multer em outra local, dividindo assim melhor cada arquivo por responsabilidades diferentes. Na pasta `src/` vamos criar o diretório `config/` e nele o arquivo `upload.ts` com a seguinte estrutura:
+
+```typescript
+import crypto from "crypto";
+import multer from "multer";
+import { resolve } from "path";
+
+export default {
+  upload(folder: string) {
+
+  },
+};
+
+```
+
+## Aula LXXXIII
+> Upload de Avatar
+
+Continuando a estrutura do arquivo `upload.ts`:
+
+```typescript
+import crypto from "crypto";
+import multer from "multer";
+import { resolve } from "path";
+
+export default {
+  upload(folder: string) {
+    return {
+      // setar onde será salvo o arquivo e o padrão de salvamento do filename
+      storage: multer.diskStorage({
+        destination: resolve(__dirname, "..", "..", folder),
+        filename: (request, file, callback) => {
+          const fileHash = crypto.randomBytes(16).toString("hex");
+          const fileName = `${fileHash}- ${file.originalname}`;
+
+          return callback(null, fileName);
+        },
+      }),
+    };
+  },
+};
+```
+Passamos essas configurações para o arquivo de rotas.
+
+```typescript
+import { Router } from "express";
+import multer from "multer";
+
+import uploadConfig from "@config/upload";
+import { CreateUserController } from "@modules/accounts/useCases/createUser/CreateUserController";
+import { UpdateUserAvatarController } from "@modules/accounts/useCases/updateUserAvatar/UpdateUserAvatarController";
+
+import { ensureAuthenticated } from "../middlewares/ensureAuthenticated";
+
+const usersRoutes = Router();
+
+const uploadAvatar = multer(uploadConfig.upload("./tmp/avatar"));
+
+const createUserController = new CreateUserController();
+usersRoutes.post("/", createUserController.handle);
+
+const updateUserAvatarController = new UpdateUserAvatarController();
+usersRoutes.patch(
+  "/avatar",
+  // autentificação: passando o usuário
+  ensureAuthenticated,
+  // upload do avatar: passando o arquivo
+  uploadAvatar.single("avatar"),
+  updateUserAvatarController.handle
+);
+
+export { usersRoutes };
+```
+Para que o avatar_file e o id possa ser reconhecido precisamos identificar ele em nossa interface `ICreateUserDTO`.
+```typescript
+interface ICreateUserDTO {
+  name: string;
+  email: string;
+  password: string;
+  driver_license: string;
+  id?: string; // opicional
+  avatar?: string; // opicional
+}
+export { ICreateUserDTO };
+```
+Repassamos essas alterações pra o método responssável pela criação do usuário em nosso repositório.
+```typescript
+function async create({
+  name,
+  email,
+  driver_license,
+  password,
+  avatar,
+  id,
+}: ICreateUserDTO): Promise<void> {
+  const user = this.repository.create({
+    name,
+    email,
+    driver_license,
+    password,
+    avatar,
+    id,
+  });
+
+  await this.repository.save(user);
+}
+```
+
+Para finalizar vamos receber no controller:
+
+```typescript
+import { Request, Response } from "express";
+import { container } from "tsyringe";
+
+import { UpdateUserAvatarUseCase } from "./UpdateUserAvatarUseCase";
+
+class UpdateUserAvatarController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    // pegando o id do usuário para filtrar
+    const { id } = request.user;
+    // pegando no nome do arquivo para salvar no banco de dados
+    const avatar_file = request.file.filename;
+
+    const updateUserAvatarUseCase = container.resolve(UpdateUserAvatarUseCase);
+
+    await updateUserAvatarUseCase.execute({ user_id: id, avatar_file });
+
+    return response.status(204).send();
+  }
+}
+export { UpdateUserAvatarController };
+```
+## Aula LXXXIV
+> Remover Arquivo de Avatar Existente
+
+Vamos criar uma função para deletar arquivos e que poderemos reutilizar futuramente. Para isso, vamos criar o aquivo `file.ts` na pasta `utils/` dentros de `src/`, com a seguinte estrutura:
+```typescript
+import fs from "fs";
+
+export const deleteFile = async (filename: string): Promise<void> => {
+  try {
+    await fs.promises.stat(filename); // verifica se o arquivo existe
+  } catch {
+    return; // se não existor, sai da função
+  }
+  await fs.promises.unlink(filename); // se existir, deleta o arquivo
+};
+```
+
+Para que não adicionemos vários arquivos vamos inserir no useCase o seguinte trecho de código na função `execute()`:
+```typescript
+if (user.avatar) {
+  await deleteFile(`./tmp/avatar/${user.avatar}`); // contatenção do path com o nome do arquivo
+}
+```
+
+## Aula LXXXV
+> Introdução
+
+- [ ] Testes
+- [ ] Tipos de testes
+- [ ] Que momento usar
+- [ ] TDD ( Test Driven Development | Desenvolvimento Orientado por Testes)
+- [ ] Como aplicar TDD
+- [ ] Regras de negócio e análise de requisitos
+
+## Aula LXXXVI
+> Conhecendo os Tipos de Testes
+
+Vamos utilizar basicamente dois tipos de testes aqui, sendo eles os **Testes Unitário** e os **Testes de Integração**.
+
+*Testes Unitários*: Os testes unitários procuram aferir a corretude do código, em sua menor fração. Em linguagens orientadas a objetos, essa menor parte do código pode ser um método de uma classe. Sendo assim, os testes unitários são aplicados a esses métodos, a partir da criação de classes de testes. No caso da nossa aplicação vai testar nossas regras de negócio.
+
+*Testes de Integração*: Teste de integração é a fase do teste de software em que módulos são combinados e testados em grupo. Ela sucede o teste de unidade, em que os módulos são testados individualmente, e antecede o teste de sistema, em que o sistema completo é testado num ambiente que simula o ambiente de produção. Ou seja vamos testar todo no fluxo, desde a chamada da rota até o retorno.
+
+Utilização do TDD, Test Driven Development, ou seja, Desenvolvimento Orientado por Testes, onde iremos criar nossos teste e desenvolver a aplicação encima dos testes criados, fazendo com que previna de problemas futuros com  as regras de negócio e a aplicação como um todo.
+
+## Aula LXXXVII
+> Criando o primeiro teste
+
+A biblioteca usada para nossos testes erá o [Jest](https://jestjs.io/pt-BR/). Para instalar ele no nosso projeto vamos executar o comando, `yarn add jest @types/jest -D`, onde iremos instalar também a sua tipagem. E para iniciar vamos rodar o `yarn jest --init`, onde precisamos ter atenção para selecionar o test environment como node, o provider como V8. Agora vamos instalar um preset com o comando,`yarn add ts-jest -D` e para ativar o preset, vamos o arquivo `jest.config.ts` setar `preset: ts-jest`. Além disso vamos configurar as classes que serão mapeadas para a realização dos testes: `testMatch: ["**/*.spec.ts"]` e para finalizar nos configuraçõepor hora, vamos setar `bail: true` fazendo com que o jest pare no primeiro erro no teste.
+
+Exemplo de estrutura de teste:
+
+```typescript
+// Agrupar testes
+describe("Criar categoria", () => {
+  // it criam os testes
+  it("Espero que 2 + 2 seja 4", () => {
+    const soma  = 2 + 2;
+    const result = 4;
+
+    // aqui eu digo: espero que (expect) - soma (soma) - seja (toBe) - result (result)
+    expect(soma).toBe(result)
+  })
+
+  it("Espero que 2 + 2 não seja 5", () => {
+    const soma  = 2 + 2;
+    const result = 5;
+
+    // aqui eu digo: espero que (expect) - soma (soma) - não (not) - seja (toBe) - result (result)
+    expect(soma).not.toBe(result)
+  })
+})
+```
+E para rodar o teste, podemos dar o comando, `yarn test`.
+
+## Aula LXXXVIII
+> Teste de Criação de Categoria
+
+Para iniciar a criação dos nossos teste unitários, vamos ceiar na pasta `creatCategory/`, o arquivo CreatCategoryUseCase.spec.ts. Para podermos executar nossos testes, não podemos utilizar o banco de dados, afim de suprir a demanda de um repositório vamos criar um "fake" que será na verdade um repositório em memória no qual iremos implementar a interface de repositório daquele específico. Então no diretório `repositories/` vamos criar a pasta `in-memory/` e nela o arquivo CategoriesRepositoryInMemory.ts. Após implemetar a nossa interface no novo repositório, vamos estrutura-lo da seguinte maneira:
+```typescript
+import { Category } from "../../infra/typeorm/entities/Category";
+import { ICategoriesRepository, ICreateCategoryDTO } from "../ICategoriesRepository";
+
+class CategoriesRepositoryInMemory implements ICategoriesRepository {
+  categories: Category[] = []; // Cria repositório de categorias
+  async findByName(name: string): Promise<Category> {
+    const category = this.categories.find((category) => category.name === name);
+    return category;
+  }
+  async list(): Promise<Category[]> {
+    const { categories } = this;
+    return categories;
+  }
+  async create({ name, description }: ICreateCategoryDTO): Promise<void> {
+    const category = new Category();
+    Object.assign(category, {
+      name,
+      description,
+    });
+    this.categories.push(category);
+  }
+}
+export { CategoriesRepositoryInMemory };
+```
+
+Com repositório criado, podemos utilizar em nossos testes de useCase onde vamos seguir a seguinte estrutura:
+```typescript
+let createCategoryUseCase: CreateCategoryUseCase;
+let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
+
+describe("Create Category", () => {
+  // Antes de cada teste iremos instanciar as sguints variáeis
+  beforeEach(() => {
+    categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
+    createCategoryUseCase = new CreateCategoryUseCase(
+      categoriesRepositoryInMemory
+    );
+  });
+
+  it("should be able to create a new category", async () => {
+    const category = {
+      name: "Category Test",
+      description: "Category description Test",
+    };
+
+    // Criando categoria
+    await createCategoryUseCase.execute({
+      name: category.name,
+      description: category.description,
+    });
+    // Buescando categoria pelo nme que foi criado
+    const categoryCreated = await categoriesRepositoryInMemory.findByName(
+      category.name
+    );
+    // Espera-se que a categoria criada tenha a prpriedade "id"
+    expect(categoryCreated).toHaveProperty("id");
+  });
+
+  it("should not be able to create a new category with name exists", async () => {
+    // Ao executar esse código espera-se que
+    expect(async () => {
+      const category = {
+        name: "Category Test",
+        description: "Category description Test",
+      };
+
+      await createCategoryUseCase.execute({
+        name: category.name,
+        description: category.description,
+      });
+
+      await createCategoryUseCase.execute({
+        name: category.name,
+        description: category.description,
+      });
+    // seja rejeitado com a instância do erro do tipo "AppError"
+    }).rejects.toBeInstanceOf(AppError);
+  });
+});
+```
+
+## Aula LXXXVIII
+> Teste de Autentificação do Usuário
+
+Saindo um pouco do módulo `cars` vamos criar o teste de utentificação de usuário. Para isso vamos no useCase do mesmo, criar o arquivo `AuthenticateUserUseCase.spec.ts`, mas antes de iniciar os nossos testes, precisamos criar nosso repositório in-Memory assim como feito anteriormente.
+
+```typescript
+import { ICreateUserDTO } from "../../dtos/ICreateUserDTO";
+import { User } from "../../infra/typeorm/entities/User";
+import { IUsersRepository } from "../IUsersRepository";
+
+class UsersRepositoryInMemory implements IUsersRepository {
+  users: User[] = []; // Cria array de usuários
+
+  // Cria usuários
+  async create({driver_license, email, name, password }: ICreateUserDTO): Promise<void> {
+    const user = new User();
+    Object.assign(user, {
+      driver_license,
+      email,
+      name,
+      password,
+    });
+    this.users.push(user);
+  }
+  // Busca usuário por emil
+  async findByEmail(email: string): Promise<User> {
+    return this.users.find((user) => user.email === email);
+  }
+  // Busca usuário por id
+  async findById(id: string): Promise<User> {
+    return this.users.find((user) => user.id === id);
+  }
+}
+export { UsersRepositoryInMemory };
+```
+Com repositório criado, vamos iniciar a criação dos nossos tentes.
+
+```typescript
+let authenticateUserUseCase: AuthenticateUserUseCase;
+let usersRepositoryInMemory: UsersRepositoryInMemory;
+let createUserUseCase: CreateUserUseCase;
+describe("Authenticate User", () => {
+  // Antes de cada teste
+  beforeEach(() => {
+    // Cria repositório
+    usersRepositoryInMemory = new UsersRepositoryInMemory();
+    // Cria useCae de atntificação
+    authenticateUserUseCase = new AuthenticateUserUseCase(
+      usersRepositoryInMemory
+    );
+    // Cria useCase de criação de usuário
+    createUserUseCase = new CreateUserUseCase(usersRepositoryInMemory);
+  });
+  // Deve ser capaz de autenticar um usuário
+  it("should be able to authenticate an user", async () => {
+    const user: ICreateUserDTO = {
+      driver_license: "000123",
+      email: "user@test.com",
+      password: "1234",
+      name: "User Test",
+    };
+    // Cria usuário
+    await createUserUseCase.execute(user);
+    // Executa atentificação
+    const result = await authenticateUserUseCase.execute({
+      email: user.email,
+      password: user.password,
+    });
+    // Espera que o objeto "result" tenha a propriedade "token"
+    expect(result).toHaveProperty("token");
+  });
+  // Não deve ser capaz de autenticar um usuário não existente
+  it("should not be able to authenticate an nonexistent user", () => {
+    expect(async () => {
+      // Autenticando usuário não criado
+      await authenticateUserUseCase.execute({
+        email: "false@email.com",
+        password: "1234",
+      });
+    // Espera que o tipo do erro que será emitido seja do tipo "AppError"
+    }).rejects.toBeInstanceOf(AppError);
+  });
+  // Não deve ser capaz de autenticar um usuário com uma senha incorreta
+  it("should not be able to authenticate with incorrect password", () => {
+    expect(async () => {
+      const user: ICreateUserDTO = {
+        driver_license: "9999",
+        email: "user@user.com",
+        password: "1234",
+        name: "User Test Error",
+      };
+      // Cirando usuário
+      await createUserUseCase.execute(user);
+      // Passandosenha incorreta para autentificação
+      await authenticateUserUseCase.execute({
+        email: user.email,
+        password: "incorrectPassword",
+      });
+    // Espera que o tipo do erro que será emitido seja do tipo "AppError"
+    }).rejects.toBeInstanceOf(AppError);
+  });
+});
+```
+
+## Aula LXXXIX
+> Imports da Aplicação
+
+Antes de seguir com os testes vamos aprender uma configuração para facilitar nossos imports. Algumas vezes no nosso import precisamos voltar várias pastas para podermos importar alguma classe/funcionalidade. Para faciliar esses imports vamos utilizar uma configuração no typescript, que nada mais é que um mapeamento das pastas que queremos referenciar. Em `tsconfig.json` vamos fazer da seguinte maneira:
+```JSON
+{
+  "compilerOptions": {
+    ...,
+    "baseUrl": "./src",
+    "paths": {
+      // Toda vez que eu disse "@modules" eu estou me referindo a src/modules/
+      "@modules/*": ["modules/*"],
+      "@config/*": ["config/*"],
+      "@shared/*": ["shared/*"],
+      "@errors/*": ["errors/*"],
+      "@utils/*": ["utils/*"]
+    },
+    ...
+  }
+}
+```
+E em .eslintrc.json vamos alterar uma configuração Que irá dizer o seguinte para o eslint: Toda importação que tem "@" eu quero que seja uma importação da minha aplicação.
+```JSON
+{
+
+"import-helpers/order-imports": [
+  "warn",
+  {
+    "newlinesBetween": "always",
+    "groups": ["module", "/^@/", ["parent", "sibling", "index"]],
+    "alphabetize": { "order": "asc", "ignoreCase": true }
+  }
+]
+}
+```
+Agora já podemos referenciar todos os imports apartir das pastas mapeadas.
+
+Para que p ts-node-dev entenda essas importações vamos instalar `yarn add tscnfig-paths -D` e nos scripts usar da seguinte maneira:
+```JSON
+```
+Ex.: `import { ICreateUserDTO } from "@modules/accounts/dtos/ICreateUserDTO";`
+
+## Aula XC
+> Corrigindo as importações
+
+Inicialment vamos configurar o jest para que ele entenda a maneira com a qual estamos importando agora, para isso:
+**`jes.config.ts`**
+```ts
+import { pathsToModuleNameMapper } from "ts-jest/utils";
+import { compilerOptions } from "./tsconfig.json";
+export default {
+  ...,
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: "<rootDir>/src/",
+  }),
+  ...,
+}
+```
+> Obs.: caso o json tenha comentários precisamos retirálos.
+
+Agora com o jest e o ts-node-dev reconhecendo nossas importações, vamos terminar de finalizar as informações no restante dos arquivos.
+
+## Aula XC
+> Refatorando a aplicação
+
+O que vamos fazer agora é separar ainda mais as responsabilidades. Primeira regra: o que for de uma camada externa vamos agrupar na pasta `infra/` que vamos criar dentro de cars e accounts (e será repetido para os demais módulos). Dentro de `infra/` vamos criar a pasta `typeorm/` e enviar  a entidade que está dentro do diretório do módulo. Ainda dentro da pasta `typeorm/` criaremos o diretório `repositories` e mover o arquivo onde está implementado (na pasta implementations) o repositório do módulo e caso necessário, corrigir as importações.
+Seguindo ainda a lógica da pasta `infra/`, vimos criar dentro da pasta `shared/`, outro dretório `infra/` e nela uma pasta `http/` onde iremos depositar partes referentes ao express, a começar com a pasta `midlewares/`, `routes/` e o arquivo `server.ts` e mover a pasta `errors/` para a pasta `shared/` já que usaremos para toda nossa aplicação. Junto com a pasta `http/` vamos realocar a pasta `database/` onde estão os arquivos referentes ao typeorm, renomenado o diretório para `typeorm/`.
+Para finalizar vamos mudar a parte do nosso script que referencia o arquivo `server.ts`, mudando o trecho `src/server.ts` para `src/shared/infra/http/server.ts`. E depois disso só vamos arrumar as importações da nossa aplicação.
+
+## Aula XCI
+> Escrevendo os requisitos da aplicação
+
+Requisitos Funcionais -	**RF**
+
+Requisitos Não Funcionais - **RNF**
+
+Regra de Negócio - **RN**
+
+### Cadastro de carro
+
+**RF**
+
+- Devev ser possível cadastrar um novo carro
+- Devev ser possível listar toas as categorias
+
+**RN**
+
+- O usuário respossável pelo cadastro dever ser um usuário administrador.
+- Não deve ser possível cadastrar um carro com uma placa existente.
+- Não de ve ser possível alterar a placa de um carro cadastrado.
+- O carro deve ser cadastrado como disponível por padrão.
+
+### Listagem de Carros
+
+**RF**
+
+- Deve ser possível listar todos os carros disponíveis
+- Deve ser possível listar todos os carros disponíveis pelo nome da categoria
+- Deve ser possível listar todos os carros disponíveis pelo nome da marca
+- Deve ser possível listar todos os carros disponíveis pelo nome do carro
+- 
+
+**RN**
+
+- O usuário não precisa estar logado no sistema
+
+### Cadastro de Especificação no Carro
+
+**RF**
+
+- O usuário respossável pelo cadastro dever ser um usuário administrador.
+- Deve ser possível cadastrar uma espeificação para um carro
+- Deve ser possível listar todas especificações
+- Deve ser possível listar todos os carros
+
+**RN**
+
+- Não deve ser possível cadastrar uma especificação para um carro não cadastrado
+- Não deve ser possível cadastrar uma especificação existente para um mesmo carro
+
+### Cadastro de imagens do carro
+
+**RF**
+
+- Deve ser possível cadastrar a imagem do carro
+- Deve ser possível listar todos os carros
+**RNF**
+
+- Utilizar o multer para upload dos arquivos
+
+**RN**
+
+- O usuário deve poder cadastrar mais de uma imagem para o mesmo carro.
+- O usuário respossável pelo cadastro dever ser um usuário administrador.
 
 
 <h4 align="center"> 
