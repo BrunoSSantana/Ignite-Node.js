@@ -642,7 +642,7 @@ class CreateCoursesService {
 ## Aula XXVI
 > Configurando ts-node-dev
 
-- Iniciar aplicação [RENTALX](https://github.com/BrunoSSantana/rentalx)
+- Iniciar aplicação rentalx
 ```bash
 yarn init -y
 yarn add express
@@ -696,7 +696,7 @@ Após feito a configuração podemos rodar o comando `yarn dev` selecionar o bre
 
 O diagrama abaixo represata de como iremos montar nossa aplicação com as tabelas que iremos criar
 
-![](https://xesque.rocketseat.dev/1571029149847-attachment.png)
+![##table](https://xesque.rocketseat.dev/1571029149847-attachment.png)
 
 Agora iremos iniciar trabalhando nas nossas rotas. Para isso, dentro da pastas `src` vamos criar outro diretório chamado `routes` e dentro criar um arquivo `categorias.routes.ts` onde iremos importar o `Router` do `express`, em seguida guardamos o  `Router` em uma const (de preferência que faça referência ao tipo da rota por exemplo, `categoriesRoutes`) para fazermos a criação de nossas rotas e exportamos ela no fim do arquivo.
 
@@ -735,7 +735,7 @@ yarn add uuid
 ```
 
 ## Aula XXX
-> Inserindo tipagem para categoria
+> Inserindo Tipagem para Categoria
 
 Afim de criar uma estrutura de dados que serão passados no `POST/categories` vamos criar justamente um modelo que nossa categoria irá ter. Dessa forma, na pasta `src/` vamos criar outro diretório, `model` e nele criar um arquivo chamado `Category.ts`, onde vamos criar a seguinte estrutura, utilizando-se das funciolidades de tipagem do typescript:
 ```typescript
@@ -777,7 +777,7 @@ categoriesRoutes.post("/", (request, response) => {
 ```
 
 ## Aula XXXI
-> criando um Repositório de Categoria
+> Criando um Repositório de Categoria
 
 Repositórios ou Repositories é a camada responssável por fazer a manipulação de dados na aplicação, no momento na nossa aplicação essa responsabilidade está por conta das nossas rotas. Afim de resolver essa problemática, iremos criar um diretório dentro do `src/` chamado `repositories/` e nele, um arquivo representando o repositório das categorias `CategoriesRepository`, com a seguinte estrutura:
 
@@ -877,6 +877,7 @@ if (categoryAlreadyExists) {
   return response.json({ error: "category Already Exists" });
 }
 ```
+
 ## Aula XXXIV
 > Entendendo o S.O.L.I.D
 
@@ -1432,7 +1433,6 @@ import { router } from "./routes";
 
 app.use(router);
 ```
-
 ## Aula XLV
 > Conhecendo o Multer
 
@@ -1891,7 +1891,6 @@ Parar o log:
 ```sh
 CTRL + C
 ```
-
 ## Aula LXI
 > Conhecendo as formas de usar o banco de dados
 
@@ -1935,7 +1934,6 @@ Dando sequência, vamos passar nossas configurações do banco de dados para um 
   "database": "rentalx"
 }
 ```
-
 
 ## Aula LXII
 > Criando Container do postgres
@@ -2255,7 +2253,6 @@ import swaggerUi from "swagger-ui-express";
 import "./database";
 
 import "./shared/container";
-
 ```
 
 ## Aula LXX
@@ -2564,7 +2561,7 @@ Logo depois da criação das migrations, vamos criar nossa entidade, antes disss
 import { Column, CreateDateColumn, Entity, PrimaryColumn } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
 
-@Entity()
+@Entity("users")
 class User {
   @PrimaryColumn()
   id: string;
@@ -2609,7 +2606,6 @@ Após criado nossa entidade, que será a comunicação com nosso banco de dados,
 ```typescript
 interface ICreateUserDTO {
   name: string;
-  username: string;
   email: string;
   password: string;
   driver_license: string;
@@ -2664,6 +2660,9 @@ class UserRepository implements IUsersRepository {
 
 export { UserRepository };
 ```
+## Aula LXXV
+> Criando Controller de Usuário
+
 Com  a parte dos repositórios finalizada, vamos dá cntinuidade com os useCases. no nosso diretório de `accounts` vamos criar `useCases/createUser/` e aí os arquivos de `useCase` e `controller`. Além desses arquivos precisamos preparar nosso container que fica dentro a pasta `shared/`, no nosso inde.ts iremos repetir a ideia a já viemos fazendo. No nosso arquivo **`CreateUserUseCase.ts`** vamos seguir a seguinte estrutura:
 ```typescript
 import { inject, injectable } from "tsyringe";
@@ -2671,7 +2670,7 @@ import { inject, injectable } from "tsyringe";
 import { ICreateUserDTO } from "../../dtos/ICreateUserDTO";
 import { IUsersRepository } from "../../repositories/implementations/IUsersRepository";
 
-injectable();
+@injectable()
 class CreateUserUseCase {
   constructor(
     @inject("UserRepository")
@@ -2704,6 +2703,35 @@ container.registerSingleton<IUsersRepository>(
   UserRepository
 );
 ```
+
+## Aula LXXVI
+> Alterar Tabela de Usuário
+
+Parando para bservar que a nossa tabela altualmente salva o name, email e username, nota-se que não se faz necessário salvar o username para esta aplicação. Sendo assim, vamos remover a coluna `usernme` da tabela `users` e para isso vamos utilizar o typeorm, onde iremos rodar o comando: `yarn typeorm migration:create -n AlterUserDeleteUsername`. Criada nossa migration, vamos seguir e criar as query.
+
+```typescript
+import { MigrationInterface, QueryRunner, TableColumn } from "typeorm";
+
+export class AlterUserDeleteUsername1624059958422
+  implements MigrationInterface
+{
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropColumn("users", "username");
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.addColumn(
+      "users",
+      new TableColumn({
+        name: "username",
+        type: "varchar",
+      })
+    );
+  }
+}
+```
+Criada nossa migration, podemos rodar ela com o comando `yarn typeorm migration:run`. Nesse momento vamos apens retirar a parte do código que faz referência a esta coluna.
+
 ## Aula LXXVII
 > Criptografar senha
 
@@ -2745,7 +2773,6 @@ function async findByEmail(email: string): Promise<User> {
   return user;
 }
 ```
-
 ## Aula LXXVIII
 > Entendendo Antenticação com JWT
 
@@ -2933,6 +2960,7 @@ export async function ensureAuthenticated(
   }
 }
 ```
+
 ## Aula LXXXI
 > Tratamento de exceções
 
@@ -3924,6 +3952,147 @@ class Car {
   created_at: Date;
 }
 export { Car };
+```
+
+## Aula XCV
+> Continuando caso de uso de carros
+
+No nosso caso de uso vamos deixar comentado os trechos de código que pertencem ao tsyringe, o `@inject()` e o `@injectable()` pois só será necessário quando finalizarmos nossos testes e integrarmos essa parte da aplicação ao nosso banco de dados.
+
+Damos prosseguimento com as regras de negócio onde vamos modificar o nosso `CreateCarUseCase.ts`. A primeira **RN** diz que não pode ser cadastro dois carros  com a mesma placa, para isso vamos fazer uma validação antes da criação do `car`
+```ts
+// O método findByLicensePlate ainda não existe e será criada
+// Para isso vamos modificar ICarsRepository.ts e o CarsRepositoryInMemory.ts
+const carAlreadyExists = await this.carsRepository.findByLicensePlate(
+  license_plate
+);
+// Caso exista, retornará um erro
+if (carAlreadyExists) {
+  throw new AppError("Car already exists!");
+}
+```
+Aqui vamos adicionar o método informando qual vai ser a entrada e a saída.
+**`ICarsRepository.ts`:**
+```ts
+interface ICarsRepository {
+  create(data: ICreateCarDTO): Promise<void>;
+  findByLicensePlate(license_plate: string): Promise<Car>;
+}
+export { ICarsRepository };
+```
+E no CarsRepositoryInMemory.ts vamos implementar o método `findByLicensePlate`.
+```ts
+function async findByLicensePlate(license_plate: string): Promise<Car> {
+  return this.cars.find((car) => car.license_plate === license_plate);
+}
+```
+
+A próxima regra de negócio diz que o carro deve ser criado **available = true**  como padrão. Para podermos verificarmos isso, vamos usar a estratégia de retornar o carro na criação e assim verificarmos a propriedade no teste. Para isso vamos começar alterando o arquivo `ICarsRepository.ts`.
+```ts
+interface ICarsRepository {
+  // alteração do retorno do método
+  create(data: ICreateCarDTO): Promise<Car>;
+  findByLicensePlate(license_plate: string): Promise<Car>;
+}
+export { ICarsRepository };
+```
+E no **`CarsrepositoryInMemory.ts`:**
+
+```ts
+function async create({
+  brand,
+  category_id,
+  daily_rate,
+  description,
+  fine_amount,
+  license_plate,
+  name,
+  // mudando o retorno
+}: ICreateCarDTO): Promise<Car> {
+  const car = new Car();
+  Object.assign(car, {
+    brand,
+    category_id,
+    daily_rate,
+    description,
+    fine_amount,
+    license_plate,
+    name,
+  });
+  this.cars.push(car);
+  // retornando um car como prometido
+  return car;
+}
+```
+
+E por fim alterndo no useCase:
+**`CreateCarUseCase.ts`**
+```ts
+function async execute({brand,category_id,daily_rate,description,fine_amount,license_plate,name}: ICreateCarDTO): Promise<Car> {
+  // [VALIDAÇÃO]
+  const car = await this.carsRepository.create({
+    // INPUTS
+  });
+  return car;
+}
+```
+Nesse momento se dermos um `console.log(car)` vamos observar que objeto estará retornando algo como:
+```ts
+Car {
+  brand: 'Brand',
+  category_id: 'category',
+  daily_rate: 100,
+  description: 'Description Car',
+  fine_amount: 60,
+  license_plate: 'ABCD-1234',
+  name: 'Car Available' }
+```
+onde não vemos id, available e created_at. Para resolver isso vamos criar um constructor com a seguinte estrutura:
+```ts
+class Car {
+  // Demais propriedades...
+  constructor() {
+    if (!this.id) {
+      this.id = uuidv4();
+      this.available = true;
+      this.created_at = new Date();
+    }
+  }
+}
+```
+
+Finalmente vamos criar nosso teste que confere a criação do car.available como true
+
+```ts
+it("should not be able to create a car with available true by default", async () => {
+  const car = await createCarUseCase.execute({
+    name: "Car Available",
+    brand: "Brand",
+    category_id: "category",
+    daily_rate: 100,
+    description: "Description Car",
+    fine_amount: 60,
+    license_plate: "ABCD-1234",
+  });
+
+  expect(car.available).toBe(true);
+});
+```
+Antes de finlizar vamos modificar um pouco o primeiro teste que criamos aqui para garantir que ele está sendo criado corretamente, pra isso vamos verificar se ele é criado com a propriedade "id".
+```ts
+it("should be able to create a new car", async () => {
+  const car = await createCarUseCase.execute({
+    name: "Name Car",
+    brand: "Brand",
+    category_id: "category",
+    daily_rate: 100,
+    description: "Description Car",
+    fine_amount: 60,
+    license_plate: "ABC-1234",
+  });
+
+  expect(car).toHaveProperty("id");
+});
 ```
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
