@@ -3558,11 +3558,19 @@ Para finalizar vamos mudar a parte do nosso script que referencia o arquivo `ser
 ## Aula XCI
 > Escrevendo os requisitos da aplicação
 
-Requisitos Funcionais -	**RF**
+**RF** - Requisitos Funcionais
 
-Requisitos Não Funcionais - **RNF**
+Parte da etapa de elicitação, os requisitos funcionais são todos os problemas e necessidades que devem ser atendidos e resolvidos pelo software por meio de funções ou serviços.
 
-Regra de Negócio - **RN**
+Tudo o que for relacionado a uma ação a ser feita é considerado uma funcionalidade. Também é importante lembrar que quanto menos ambíguos e mais objetivos forem os requisitos funcionais, maior será a qualidade do software gerado.
+
+**RNF** - Requisitos Não Funcionais
+
+Os requisitos não funcionais são todos aqueles relacionados à forma como o software tornará realidade os que está sendo planejado. Ou seja, enquanto os requisitos funcionais estão focados no que será feito, os não funcionais descrevem como serão feitos.
+
+**RN** - Regra de Negócio
+
+Regras de negócio são critérios e restrições informados são regras, e regras da empresa (negócio) que faz as entregas. Logo, são regras de negócio.
 
 ### Cadastro de carro
 
@@ -3586,7 +3594,6 @@ Regra de Negócio - **RN**
 - Deve ser possível listar todos os carros disponíveis pelo nome da categoria
 - Deve ser possível listar todos os carros disponíveis pelo nome da marca
 - Deve ser possível listar todos os carros disponíveis pelo nome do carro
-- 
 
 **RN**
 
@@ -3597,30 +3604,42 @@ Regra de Negócio - **RN**
 **RF**
 
 - O usuário respossável pelo cadastro dever ser um usuário administrador.
-- Deve ser possível cadastrar uma espeificação para um carro
-- Deve ser possível listar todas especificações
-- Deve ser possível listar todos os carros
+- Deve ser possível cadastrar uma espeificação para um carro.
+- Deve ser possível listar todas especificações.
+- Deve ser possível listar todos os carros.
 
 **RN**
 
-- Não deve ser possível cadastrar uma especificação para um carro não cadastrado
-- Não deve ser possível cadastrar uma especificação existente para um mesmo carro
+- Não deve ser possível cadastrar uma especificação para um carro não cadastrado.
+- Não deve ser possível cadastrar uma especificação existente para um mesmo carro.
+- O usuário respossável pelo cadastro dever ser um usuário administrador.
 
 ### Cadastro de imagens do carro
 
 **RF**
 
-- Deve ser possível cadastrar a imagem do carro
-- Deve ser possível listar todos os carros
+- Deve ser possível cadastrar a imagem do carro.
+- Deve ser possível listar todos os carros.
 **RNF**
 
-- Utilizar o multer para upload dos arquivos
+- Utilizar o multer para upload dos arquivos.
 
 **RN**
 
 - O usuário deve poder cadastrar mais de uma imagem para o mesmo carro.
 - O usuário respossável pelo cadastro dever ser um usuário administrador.
 
+### Aluguel de carro
+
+**RF**
+
+- Deve ser possível cadastrar um alugel
+
+**RN**
+
+- O aluguel deve ter duração mínima de 24 horas.
+- Não deve ser possível cadastrar um novo alugel caso já exista um aberto  parao mesmo usuário
+- Não deve ser possível cadastrar um novo alugel caso já exista um aberto  parao mesmo carro
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
