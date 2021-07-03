@@ -3641,6 +3641,113 @@ Regras de negócio são critérios e restrições informados são regras, e regr
 - Não deve ser possível cadastrar um novo alugel caso já exista um aberto  parao mesmo usuário
 - Não deve ser possível cadastrar um novo alugel caso já exista um aberto  parao mesmo carro
 
+## Aula XCIII
+> Criando migrations do carro
+
+Para dar continuidade na nossa aplicação vamos agora criar a tablea de `cars`criando nossa migrations com o comando `yarn typeorm migration:create -n CreateCars`, mas antes vamos alterar o caminho das migrations no `ormconfig.json`.
+
+```json
+{
+  "type": "postgres",
+  "port": 5432,
+  "host": "localhost",
+  "username": "docker",
+  "password": "ignite",
+  "database": "rentalx",
+  // path alterada
+  "migrations": ["./src/shared/infra/typeorm/migrations/*.ts"],
+  "entities": ["./src/modules/**/entities/*.ts"],
+  "cli": {
+    // path alterada
+    "migrationsDir": "./src/shared/infra/typeorm/migrations"
+  }
+}
+```
+E finalmente podemos criar a estrutura da migration para moldar nossa tabela de `cars`.
+
+**`CreateCars`:**
+```ts
+import { MigrationInterface, QueryRunner, Table } from "typeorm";
+
+export class CreateCars1625310735313 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createTable(
+      new Table({
+        name: "cars",
+        columns: [
+          {
+            name: "id",
+            type: "uuid",
+            isPrimary: true,
+          },
+          {
+            name: "name",
+            type: "varchar",
+          },
+          {
+            name: "description",
+            type: "varchar",
+          },
+          {
+            name: "daily_rate",
+            type: "numeric",
+          },
+          {
+            name: "available",
+            type: "boolean",
+            default: true,
+          },
+          {
+            name: "license_plate",
+            type: "varchar",
+          },
+          {
+            name: "fine_amount",
+            type: "numeric",
+          },
+          {
+            name: "brand",
+            type: "varchar",
+          },
+          // coluna que referencia outra (foreignkeys)
+          {
+            name: "category_id",
+            type: "uuid",
+            // pode ser nulo
+            isNullable: true,
+          },
+          {
+            name: "created_at",
+            type: "timestamp",
+            default: "now()",
+          },
+        ],
+        // linkando as colunas
+        foreignKeys: [
+          {
+            // nome do link
+            name: "FKCategoryCar",
+            // referenciando tabela origem
+            referencedTableName: "categories",
+            // referencindo coluna da tabela origem
+            referencedColumnNames: ["id"],
+            // referenciando a coluna da tabela 
+            columnNames: ["category_id"],
+            // caso a categoria de fora seja apagada, na nossa tabela o valor irá mudar para nulo
+            onDelete: "SET NULL",
+            // caso a categoria de fora seja atualizada, na nossa tabela o valor irá mudar para nulo
+            onUpdate: "SET NULL",
+          },
+        ],
+      })
+    );
+  }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropDatabase("cars");
+  }
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
