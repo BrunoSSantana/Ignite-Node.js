@@ -4318,6 +4318,72 @@ Para finalizar precisamos executar o nosso `seed/admin.ts`. Dessa maneira, vamos
 ```
 E assim pode star nossa aplicação e executar o script com `yarn seed:admin`, criando assim nosso usuário admin.
 
+## Aula XCVII
+> Criando middleware de administrador
+
+Na criação desse middleware vamos pegar o usuário que é enviado no request a partir do middleware ensureuthenticated, e verificar se o `isAdmin` é `true` e retornar o `net()`, simples assim. Então na pasta em `shared/infra/http/middlewares/` vamos criar  o arquivo `ensureAdmin.ts` com a seguinte estrutura:
+
+```ts
+export async function ensureAdmin(
+  // estrutura padrão de middleware
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> {
+  // captura id do user passado pelo ensureAuthenticated
+  const { id } = request.user;
+  // instanciando o usersRepository
+  const usersRepository = new UsersRepository();
+  // buscando o user com o mesmo id
+  const user = await usersRepository.findById(id);
+  // caso o usuário não seja admin ele vai retornar o erro: "User isn't Admin!"
+  if (!user.isAdmin) {
+    throw new AppError("User isn't Admin!");
+  }
+  // caso seja admin, segue na rota
+  return next();
+}
+```
+Após criado o middleware, podemos utilizá-lo em nossas rotas de `POST` em cars, categories e specificaions, lembrando que sempre será após o `ensureAuthenticated`.
+
+**`cars.routes.ts`**
+```ts
+carsRoutes.post(
+  "/",
+  ensureAuthenticated,
+  ensureAdmin,
+  createCarController.handle
+);
+```
+**`categories.routes.ts`**
+```ts
+categoriesRoutes.post(
+  "/",
+  ensureAuthenticated,
+  ensureAdmin,
+  createCategoryController.handle
+);
+
+categoriesRoutes.get("/", listCategoriesController.handle);
+
+categoriesRoutes.post(
+  "/import",
+  upload.single("file"),
+  ensureAuthenticated,
+  ensureAdmin,
+  importCategoryController.handle
+);
+```
+**`specifications.routes.ts`**
+```ts
+specificationsRoutes.post(
+  "/",
+  ensureAuthenticated,
+  ensureAdmin,
+  createSpecificationController.hadle
+);
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
