@@ -4259,7 +4259,64 @@ import { carsRoutes } from "./cars.routes";
 // ... RESTO DO CÓDIGO
 router.use("/cars", carsRoutes);
 ```
-Finlizamos testanto o código no insomnia
+Finlizamos testanto o código no insomnia.
+
+## Aula XCVII
+> Criando seed de usuário
+
+Na nossa estrutura de criação de usuário atualmente não conseguimos sinalizar que ele é um admin ou não para evitar manipulações por parte de outros usuários maliciosos. Para resoler esse problema vamos utilizar o conceito de seed pra a criação do usuário admin, rodando uma query direto na aplicação como veremos a seguir.
+
+No path `shared/infra/typeorm/` vamos criar o diretório `seed/` e nele o arquivo `admin.ts` com a finalidade de captura a conexão criada `typeorm/index.ts`. Da maneira que estamos criando atualmente a nossa conexão fica mais difícil fazer esse procedimento, para isso então, vamos reestruturar da seguinte maneira.
+
+**`typeorm/index.ts`:**
+```ts
+// Definimos "database_ignite" como host padrão pois esse é o nome do meu banco de dados o qual foi definido na criação com o docker-compose, mas existem complitos do docker com o typeorm, por isso será passado outro nome no createConnection do seed/admin.ts
+export default async (host = "database_ignite"): Promise<Connection> => {
+  const defaultOptions = await getConnectionOptions();
+  return createConnection(Object.assign(defaultOptions, { host }));
+};
+```
+Com nossa connection sendo exportada vamos poder capturar no `seed/admin.ts`.
+**`seed/admin.ts`:**
+```ts
+async function create() {
+  // host = localhost devido a conflitos entre o typeorm e o docker
+  const connection = await createConnection("localhost");
+
+  const id = uuidv4();
+  const password = await hash("admin", 8);
+  // inserção do user admin na tabela USERS
+  await connection.query(
+    `INSERT INTO USERS(id, name, email, password, "isAdmin", created_at, driver_license )
+    values('${id}', 'admin', 'admin@rentalx.com.br', '${password}', true, 'now()', '123456')`
+  );
+}
+
+create().then(() => console.log("User Admin created!"));
+```
+
+Já que mudamos a forma que esportamos a nossa conexão com o banco de dados teremos que mudar também a forama como importamos no nosso server.
+**`server.ts`:**
+```ts
+// ...
+import createConnection from "@shared/infra/typeorm";
+// ...
+createConnection();
+// ...
+```
+
+Para finalizar precisamos executar o nosso `seed/admin.ts`. Dessa maneira, vamos criar um secript no **`package.json`**:
+```json
+{
+  // ...
+    "scripts": {
+    //... 
+    "seed:admin": "ts-node-dev src/shared/infra/typeorm/seed/admin.ts"
+  },
+  // ...
+}
+```
+E assim pode star nossa aplicação e executar o script com `yarn seed:admin`, criando assim nosso usuário admin.
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
