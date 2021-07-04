@@ -4384,6 +4384,139 @@ specificationsRoutes.post(
 );
 ```
 
+## Aula XCVIII
+> Listando carros disponíveis
+
+Para fazer a listagem de carros, antes de tudo precisamos criar um useCase no módulo de `cars` que vamos chamar de `listCars/` e juntamente o `ListCarsUseCase.ts` e `ListCarsUseCase.spec.ts`. Para termos como listar todos os carros e os filtros opicionais de nome, marca ou categoria, é necessário um método no repositório, que que essa parte da aplicação é de função dele, então antes de passarmos para o useCase e o teste, vamos ajustar nosso repositório.
+**`ICarsRepository.ts`:**
+```ts
+interface ICarsRepository {
+  create(data: ICreateCarDTO): Promise<Car>;
+  findByLicensePlate(license_plate: string): Promise<Car>;
+  // Vamos apenas declarar esse novo método e irformar que os "inputs" são opicionais
+  // Lembrando que o retorno será de uma lista de carros ➡ Car[]
+  findAvailable(
+    brand?: string,
+    name?: string,
+    category_id?: string
+  ): Promise<Car[]>;
+}
+export { ICarsRepository };
+```
+Vamos relembrar um pouco do que queremos.
+1 - Que retorne todos os carros disponíveis (available = true)
+2 - Se informar a marca, retorne todos os carros disponíveis daquela marca
+3 - Se informar a nome, retorne todos os carros disponíveis daquela nome
+4 - Se informar a categoria, retorne todos os carros disponíveis daquela categoria
+Ou seja, por padrão retorna tudo, mas temos filtros opicionais.
+**`CarsRepositoryInMemory.ts`:**
+```ts
+class CarsRepositoryInMemory{
+  // ...OUTROS MÉTODOS
+  async findAvailable(
+    brand?: string,
+    name?: string,
+    category_id?: string
+  ): Promise<Car[]> {
+    const cars = this.cars.filter((car) => {
+      
+      if (
+        // se estiver disponíve e
+        car.available === true &&
+        // a marca existir e a marca do carro for igual a marca passada, retorna esse aí
+                                      // OU
+        ((brand && car.brand === brand) ||
+        // a categoria existir e a categoria do carro for igual a categoria passada, retorna esse aí
+                                                      // OU
+        (category_id && car.category_id === category_id) ||
+        // o nome existir e o nome do carro for igual ao nome passado, retorna esse aí
+        (name && car.name === name))
+      ) {
+        // retorne car para o filtro
+        return car;
+      }
+      return null;
+    });
+    // retorne a lista filtrada
+    return cars;
+  }
+}
+```
+Com o repositó de teste criados podemos prosseguir e criar nosso useCase.
+**`ListCarsUseCase.ts`:**
+```ts
+// aqui informamos que dados serão recebidos no método execute 
+interface IRequest {
+  category_id?: string;
+  brand?: string;
+  name?: string;
+}
+
+class ListCarsUseCase {
+  // informando que tipo de objeto será passado no useCase quando for instanciado
+  constructor(private carsRepository: ICarsRepository) {}
+
+  async execute({ brand, category_id, name }: IRequest): Promise<Car[]> {
+    // utilizando o método que acabamos de criar
+    const cars = await this.carsRepository.findAvailable(
+      brand,
+      category_id,
+      name
+    );
+    // retornando os carros
+    return cars;
+  }
+}
+export { ListCarsUseCase };
+```
+
+**`ListCarsUseCase.spec.ts`:**
+```ts
+// criando as variáveis de useCase e repository
+let listCarsUseCase: ListCarsUseCase;
+let carsRepositoryInMemory: CarsRepositoryInMemory;
+
+describe("List Cars", () => {
+  // instanciando antes de cada teste
+  beforeEach(() => {
+    carsRepositoryInMemory = new CarsRepositoryInMemory();
+    listCarsUseCase = new ListCarsUseCase(carsRepositoryInMemory);
+  });
+  // Teste para listar todos os carros disponíveis
+  it("should be able to list all available cars", async () => {
+    const car = await carsRepositoryInMemory.create({
+      name: "Car1",
+      brand: "Car_brand",
+      category_id: "category_id",
+      daily_rate: 140,
+      description: "Carro massa",
+      fine_amount: 100,
+      license_plate: "DFG-4454",
+    });
+    const cars = await listCarsUseCase.execute({});
+    expect(cars).toEqual([car]); // PROBLEMA AKI!!!
+  });
+
+  // Teste para listar todos os carros disponíveis por nome
+  it("should be able to list all available cars by name", async () => {
+    const car = await carsRepositoryInMemory.create({
+      name: "Car2",
+      brand: "Car_brand_test",
+      category_id: "category_id",
+      daily_rate: 140,
+      description: "Carro massa",
+      fine_amount: 100,
+      license_plate: "DFG-4454",
+    });
+    const cars = await listCarsUseCase.execute({
+      brand: "Car_brand_test",
+    });
+    expect(cars).toEqual([car]);
+  });
+});
+```
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
