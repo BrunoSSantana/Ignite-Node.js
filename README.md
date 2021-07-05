@@ -1389,7 +1389,7 @@ class CategoriesRepository implements ICategoriesRepository {
 
 Agora vamos simplesmente criar uma diretório chamado `implementations/`, dentro do diretório de repositórios para separas as nossas interfaces em seguida ajustar os imports que aparecerem errados.
 
-## Aula XLIII
+## Aula XLIV
 > Criando Use Case de Especificações
 
 - Criar diretório `createSpecification/` dentro do `useCase/`
@@ -1408,7 +1408,7 @@ Agora vamos simplesmente criar uma diretório chamado `implementations/`, dentro
   - exportar o controller
 - Importar o controller na rota e passar o request e o response
 
-## Aula XLIV
+## Aula XLV
 > Refatorando as Rotas
 
 Agora vamos fazer um pequeno retoque. Nas rotas vamos criar um index dentro da pasta `routes/` para unificar todas as rotas e exportálas para o server da seguinte maneira:
@@ -1433,12 +1433,12 @@ import { router } from "./routes";
 
 app.use(router);
 ```
-## Aula XLV
+## Aula XLVI
 > Conhecendo o Multer
 
 Vamos cadasrar as categorias importando um arquivo, lendo o arquivo e salvando, para nos auxiliar vamos utilizar a biblioteca [multer](https://www.npmjs.com/package/multer) para o upload de arquivos.
 
-## Aula XLVI
+## Aula XLVII
 > Criando Upload de Arquivos
 
 - Instalar o multer: `yarn add multer`
@@ -1461,7 +1461,7 @@ categoriesRoutes.post("/import", upload.single("file"), (request, response) =>{
 
 No insommia vamos criar nossa request post e no body vamos escolher "Multipart Form", por nossa rota "/categories/import" e por no campo "name" do Multipart "file" e no value, escolher "file".
 
-## Aula XLVII
+## Aula XLVIII
 > Criando o Use Case  para Importar Categorias
 
 Dentro do diretório `useCases/` vamos criar o diretório do nosso useCase `importCategory/` e os três arquivos assim como nos demais useCases, sendo eles:
@@ -1490,7 +1490,7 @@ Agora vamos iniciar criando a nossa classe useCase e em seguida exportando-a par
 
 Nesse momento podemos verificar se está tudo ok indo lá no insomnia.
 
-## Aula XLVIII
+## Aula XLIX
 > Conhecendo o conceito de stream
 
 Para a leitura do nosso arquivo vamos usar o conceito de stream, usando a biblioteca fs do próprio NodeJS. No fs iremos guardar em uma variável chamada `stream`, o retorno do método para criar leitura de stream, onde passamos como parâmetro o path do nosso arquivo. A variável stream retonará pedaços do nosso arquivo utilizando o método pipe como mostra a figura a baixo:
@@ -1591,7 +1591,7 @@ categories.map(async (category) => {
 
 [Swagger](https://swagger.io) é uma ferramenta que nos ajuda a criar documentações claras de forma simples tanto pra quem faz quant pra quem utiliza.
 
-## Aula LII
+## Aula LIII
 > Configurando o Swagger
 
 **Instalação**
@@ -1627,7 +1627,7 @@ Esse JSON será responsável por todas as inforções apresentadas na documenta�
 ```
 Finalizado esta etapa, podemos rodar um `yarn dev` e ir até a rota <http://localhost:3333/api-docs>.
 
-## Aula LIII
+## Aula LIV
 > Criando a Documentação de Criação de Categoria
 
 Após a seção de `infos`, vamos iniciar com a criação de um objetochamado `"paths":{}` que será responsável por adicionar todas as rotas seguindo a seguinte estrutura:
@@ -1672,7 +1672,7 @@ Após a seção de `infos`, vamos iniciar com a criação de um objetochamado `"
   }
 ```
 
-## Auala LIV
+## Aula LV
 > Criando Documentação da Listagem de Categorias
 
 Agora vamos fazer a rota da documnetação pra fazer a listagem das categorias.
@@ -1708,7 +1708,7 @@ Agora vamos fazer a rota da documnetação pra fazer a listagem das categorias.
       }
 ```
 
-## Aula LV
+## Aula LVI
 > Removendo os Arquivos de Upload
 
 Adicone a seguinte linha no useCase do importCategory:
@@ -1732,7 +1732,7 @@ parseFile
 
 **CHAPTER III**
 
-## Aula LVI
+## Aula LVII
 > Introdução ao Chapter III
 
 * Introdução ao Docker
@@ -1742,7 +1742,7 @@ parseFile
 * Incremetnando a documentação 
 * Criptografias e senhas
 
-## Aula LVII
+## Aula LVIII
 > O que é Docker?
 
 * Ferramenta que auxilia a craição de containers (ambiente isolados da nossa máquina)
@@ -1758,7 +1758,7 @@ Um container é um ambiente isolado. Um container contém um conjunto de process
 
 **Por exemplo:** se você está desenvolvendo uma aplicação para um cliente, você pode fazer suas configurações nessa aplicação… Mas, em um ambiente convencional, você precisará replicar estas configurações para os outros ambientes de execução. Com o Docker, você estará fazendo isso em um ambiente isolado e, por causa da facilidade para replicação de containers, você acaba criando ambientes padronizados, tanto em desenvolvimento como em produção, por exemplo. 
 
-## Aula LVIII
+## Aula LIX
 > Criando nosso peimeiro container e Dockerfile
 
 Passando a responsabilidade dos prerequisitos de instalação para o Docker, ficamos livres para nãos instalarmos pacotes como node, postgres, qualquer outro banco de dados, ou ferramenta que requeira sua instalação no computador.
@@ -1807,7 +1807,7 @@ sudo docker -it 'nome do container' /bin/bash
 
 ```
 
-## Aula LIX
+## Aula LX
 > Usando Docker-compose
 
 **Para que serve o DOcker-compose?**
@@ -1840,7 +1840,7 @@ Conferir o logs do docker:
 sudo docker-compose logs nome_do_container -f
 ```
 
-## Aula LX
+## Aula LXI
 > Comandos do Docker
 
 Lista os containers em execução:
@@ -1891,14 +1891,14 @@ Parar o log:
 ```sh
 CTRL + C
 ```
-## Aula LXI
+## Aula LXII
 > Conhecendo as formas de usar o banco de dados
 
 Divrer Nativo: Dificulta a troca futura de um banco de dados
 Querry Bilders : Facilita uma possível troca de banco de dados
 ORM: Facilita uma possível troca de banco de dados, além de mapear nossas entidades trabalhando melhor com o banco de dados
 
-## Aula LXII
+## Aula LXIII
 > Instalando TypeORM
 
 Nesse momento vamos instalar além do typeorm, o reflect-metada como a documentação sugere e um banco de dados da nossa escolha.
@@ -1935,7 +1935,7 @@ Dando sequência, vamos passar nossas configurações do banco de dados para um 
 }
 ```
 
-## Aula LXII
+## Aula LXIV
 > Criando Container do postgres
 
 Vamos criar nosso banco de dados através do docker-compose e conectar o banco de dados ao app. Para isso vamos editar nosso arquivo `docker-compose.yml`:
@@ -1973,12 +1973,12 @@ volumes:
     driver: local
 ```
 
-## Aula LXIII
+## Aula LXV
 > Aprendendo o conceito de migrations
 
 As migrations é um versionamento para nosso banco de dados, onde vamos criar e alterar nossas tabelas pelas migrations criadas.
 
-## Aula LXIV
+## Aula LXVI
 > Criando Migration de Category
 
 Vamos iniciar criando um script como sugere a documentação para podermos executar a nossa `cli`:
@@ -2049,7 +2049,7 @@ Para desfazer:
 yarn typeorm migration:revert
 ```
 
-## Aula LXV
+## Aula LXVII
 > Refatorando o Model de Category
 
 Para que nosso ORM possa "mapear" nossas tabelas na aplicação recisamos ter algo parecido com o que na verdade já temos no nosso model, só que com o nome entities. Para isso vamos renomear nossa pasta model para entities e adicionar a seguinte estrutura nossa "Category":
@@ -2082,7 +2082,7 @@ class Category {
 export { Category };
 ```
 
-## Aula LXVI
+## Aula LXVIII
 > Alterando o Repositório de Category
 
 Para podermos manipular o banco de dados, nosso ORM oferece o "Repository" que já possuem alguns métodos que podem ser usadas na nossa aplicação. No cassa desta aplicação já criamos os métodos a serem usados, por tanto vamos tornar nosso repository "private".
@@ -2126,7 +2126,7 @@ interface ICategoriesRepository {
 }
 ```
 
-## Aula LXVII
+## Aula LXIX
 > Refatorando o Caso de Uso de Category
 
 Primeiramente vamos refatorar nosso repositório onde vamos tirar nosso construtor do `private` e retirar a parte de `instance` ja que estaremos agora o nosso banco de dados.
@@ -2158,7 +2158,7 @@ categoriesRoutes.post("/", (request, response) => {
 ```
 Para que o código possa rodar sem ser feito todas as alterções na parte dos `category`, nos demais `useCase/` vamos atribuir o valor como null ao `categoriesRepository`. Próximo passo é corrigir as funções onde usamos de alguma forma o banco de dados ou onde passam as informações dele, tornando-os assícronos (Arquivos de useCase e conotroller).
 
-## Aula LXVIII
+## Aula LXX
 > Entendendo as Alterações
 
 - Refatoração do repositório de categorias
@@ -2166,7 +2166,7 @@ Para que o código possa rodar sem ser feito todas as alterções na parte dos `
 - Tirar o `private` do `constructor`
 - Envolver o `Controller` em uma função (instanciar apenas quando chamar)
 
-## Aula LXIX
+## Aula LXXI
 > Conhecendo TSyringe
 
 O TSyringe vai nos ajudar a fazer as injenções de dependêncis na nossa aplicação.
@@ -2255,7 +2255,7 @@ import "./database";
 import "./shared/container";
 ```
 
-## Aula LXX
+## Aula LXXII
 > Refatorando as especificações
 
 Primeiramente vamos excluir o index na pastas `useCases/createCategory/`
@@ -2290,7 +2290,7 @@ const listCategoriesController = new ListCategoriesController();
 categoriesRoutes.get("/", listCategoriesController.handle);
 ```
 
-## Aula LXXI
+## Aula LXXIII
 > Criando Migration de Especificações
 
 Migrations -> Entities -> Repository -> useCase -> Routes
@@ -2415,7 +2415,7 @@ const createSpecificationController = new CreateSpecificationController();
 
 specificationsRoutes.post("/", createSpecificationController.hadle);
 ```
-## Aula LXXII
+## Aula LXXIV
 > Continuação da Documentação
 
 Continuando aqui na documentação, vamos adicionar mais um path, o `"/specifications"` com a seguinte estrutura:
@@ -2495,7 +2495,7 @@ Para criar agora a documentação do nosso **Import Category** vamos adicionar m
 ```
 Aqui novamente podemos conferir se está tudo ok indo na rota de listagem e verificando se conseguimos importar os dados do nosso arquivo.
 
-## Aula LXXIII
+## Aula LXXV
 > Criando Migration de Usuário
 
 Não muito diferente do que já foi feito, vamos criar agora uma migration para criar a tabela de usuários onde teremos os campos de: id, name, username, email, password, driver_license, isAdmin e created_at como mostra a seguir.
@@ -2597,7 +2597,7 @@ class User {
 export { User };
 ```
 
-## Aula LXXIV
+## Aula LXXVI
 > Criando Repositório de Usuário
 
 Após criado nossa entidade, que será a comunicação com nosso banco de dados, iremos partir pra o repositório o qual irá trabalahar esse banco de dados. Primeiramente iremos criar dentro do módulo `accounts` os arquivos: `IUsersRepository.ts` no diretório `repositories/implementations/`; `UsersRepository.ts` no diretório `repositories/`; `ICreateUserDTO.ts` no diretório `dtos`.
@@ -2660,7 +2660,7 @@ class UserRepository implements IUsersRepository {
 
 export { UserRepository };
 ```
-## Aula LXXV
+## Aula LXXVII
 > Criando Controller de Usuário
 
 Com  a parte dos repositórios finalizada, vamos dá cntinuidade com os useCases. no nosso diretório de `accounts` vamos criar `useCases/createUser/` e aí os arquivos de `useCase` e `controller`. Além desses arquivos precisamos preparar nosso container que fica dentro a pasta `shared/`, no nosso inde.ts iremos repetir a ideia a já viemos fazendo. No nosso arquivo **`CreateUserUseCase.ts`** vamos seguir a seguinte estrutura:
@@ -2704,7 +2704,7 @@ container.registerSingleton<IUsersRepository>(
 );
 ```
 
-## Aula LXXVI
+## Aula LXXVIII
 > Alterar Tabela de Usuário
 
 Parando para bservar que a nossa tabela altualmente salva o name, email e username, nota-se que não se faz necessário salvar o username para esta aplicação. Sendo assim, vamos remover a coluna `usernme` da tabela `users` e para isso vamos utilizar o typeorm, onde iremos rodar o comando: `yarn typeorm migration:create -n AlterUserDeleteUsername`. Criada nossa migration, vamos seguir e criar as query.
@@ -2732,7 +2732,7 @@ export class AlterUserDeleteUsername1624059958422
 ```
 Criada nossa migration, podemos rodar ela com o comando `yarn typeorm migration:run`. Nesse momento vamos apens retirar a parte do código que faz referência a esta coluna.
 
-## Aula LXXVII
+## Aula LXXIX
 > Criptografar senha
 
 Aqui no banco de dados a nossa senha está totalmente exposta dando brechas para algum mal intensionado fazer qualquer operação. Para não deixar nossas senhas expostas dessa maneira iremos usar uma biblioteca, a bcrypt, que irá criptografar nossa senha antes de salvar no banco de dados. Para isso iremos importa a função hash, da lib bcrypt, no arquivo CreateUserUseCase.ts, usar a função hash no nosso password e salva-la.
@@ -2773,12 +2773,12 @@ function async findByEmail(email: string): Promise<User> {
   return user;
 }
 ```
-## Aula LXXVIII
+## Aula LXXX
 > Entendendo Antenticação com JWT
 
 Hoje não tems o controle para saber se o usuário está ou não logado na nossa aplicação, para ter umcontrole maior nobre nosso usuário, sobre "quem tá fazendo o que". Para abordar esse problema vamos utilizar o JWT (Json Web Token). No momento que o usuário passa a senha e verificamos que ela está correta, geramos este token onde passamos algumas informações nesses tokens, mas nunca informações senssíveis.
 
-## Aula LXXIX
+## Aula LXXXI
 > Criando Token do Usuário
 
 Vamos iniciar aqui adicionando a biblioteca `jsonwebtoken`:
@@ -2901,7 +2901,7 @@ import { authenticateRoutes } from "./authenticate.routes";
 // [...]
 router.use(authenticateRoutes);
 ```
-## Aula LXXX
+## Aula LXXXII
 > Autenticação das Rotas
 
 Agora limitar o acesso de alguns usuários a algumas de nossas rotas utilizando o nosso token. Para isso vamo criar um middleware que vai sempre verificar se é um token válido para realizarmos a nossa requisição, se o usuário existe. Nesse sentido, na pasta `src/`, vamos iniciar criando uma `pastamiddlewares/` e nela o arquivo `ensureAuthenticated.ts`.
@@ -2961,7 +2961,7 @@ export async function ensureAuthenticated(
 }
 ```
 
-## Aula LXXXI
+## Aula LXXXIII
 > Tratamento de exceções
 
 O objetivo nesse momento é que a api repasse os erros que aparecerem, fazendo com que o erro não cai no log e a aplicação não pare.
@@ -3005,7 +3005,7 @@ app.use(
 ```
 E para finalmente concluir a missão de repassar os erros, vamos instalar a lib `express-asyndc-errors` com o comando `yarn add express-async-errors`. Para utilizar, vamos importar essa lib no nosso `server.ts` após o express.
 
-## Aula LXXXII
+## Aula LXXXIV
 > Adcionando Coluna de Avatar
 
 Para armazenar os arquivos de imagem de avatar, vamos utilizar os storages para armazenar o arquivo e reverenciar esse por uma url em nosso banco de dados para podemos está recuperando esse arquivo quando necessário. Esse processo recomendável devido ao peso desse tipo de arquivo em nosso banco podendo tornar mais pesado e afetando  o desempenho.
@@ -3132,7 +3132,7 @@ export default {
 
 ```
 
-## Aula LXXXIII
+## Aula LXXXV
 > Upload de Avatar
 
 Continuando a estrutura do arquivo `upload.ts`:
@@ -3249,7 +3249,7 @@ class UpdateUserAvatarController {
 }
 export { UpdateUserAvatarController };
 ```
-## Aula LXXXIV
+## Aula LXXXVI
 > Remover Arquivo de Avatar Existente
 
 Vamos criar uma função para deletar arquivos e que poderemos reutilizar futuramente. Para isso, vamos criar o aquivo `file.ts` na pasta `utils/` dentros de `src/`, com a seguinte estrutura:
@@ -3273,7 +3273,7 @@ if (user.avatar) {
 }
 ```
 
-## Aula LXXXV
+## Aula LXXXVII
 > Introdução
 
 - [ ] Testes
@@ -3283,7 +3283,7 @@ if (user.avatar) {
 - [ ] Como aplicar TDD
 - [ ] Regras de negócio e análise de requisitos
 
-## Aula LXXXVI
+## Aula LXXXVIII
 > Conhecendo os Tipos de Testes
 
 Vamos utilizar basicamente dois tipos de testes aqui, sendo eles os **Testes Unitário** e os **Testes de Integração**.
@@ -3294,7 +3294,7 @@ Vamos utilizar basicamente dois tipos de testes aqui, sendo eles os **Testes Uni
 
 Utilização do TDD, Test Driven Development, ou seja, Desenvolvimento Orientado por Testes, onde iremos criar nossos teste e desenvolver a aplicação encima dos testes criados, fazendo com que previna de problemas futuros com  as regras de negócio e a aplicação como um todo.
 
-## Aula LXXXVII
+## Aula LXXXIX
 > Criando o primeiro teste
 
 A biblioteca usada para nossos testes erá o [Jest](https://jestjs.io/pt-BR/). Para instalar ele no nosso projeto vamos executar o comando, `yarn add jest @types/jest -D`, onde iremos instalar também a sua tipagem. E para iniciar vamos rodar o `yarn jest --init`, onde precisamos ter atenção para selecionar o test environment como node, o provider como V8. Agora vamos instalar um preset com o comando,`yarn add ts-jest -D` e para ativar o preset, vamos o arquivo `jest.config.ts` setar `preset: ts-jest`. Além disso vamos configurar as classes que serão mapeadas para a realização dos testes: `testMatch: ["**/*.spec.ts"]` e para finalizar nos configuraçõepor hora, vamos setar `bail: true` fazendo com que o jest pare no primeiro erro no teste.
@@ -3324,7 +3324,7 @@ describe("Criar categoria", () => {
 ```
 E para rodar o teste, podemos dar o comando, `yarn test`.
 
-## Aula LXXXVIII
+## Aula XC
 > Teste de Criação de Categoria
 
 Para iniciar a criação dos nossos teste unitários, vamos ceiar na pasta `creatCategory/`, o arquivo CreatCategoryUseCase.spec.ts. Para podermos executar nossos testes, não podemos utilizar o banco de dados, afim de suprir a demanda de um repositório vamos criar um "fake" que será na verdade um repositório em memória no qual iremos implementar a interface de repositório daquele específico. Então no diretório `repositories/` vamos criar a pasta `in-memory/` e nela o arquivo CategoriesRepositoryInMemory.ts. Após implemetar a nossa interface no novo repositório, vamos estrutura-lo da seguinte maneira:
@@ -3410,7 +3410,7 @@ describe("Create Category", () => {
 });
 ```
 
-## Aula LXXXVIII
+## Aula XCI
 > Teste de Autentificação do Usuário
 
 Saindo um pouco do módulo `cars` vamos criar o teste de utentificação de usuário. Para isso vamos no useCase do mesmo, criar o arquivo `AuthenticateUserUseCase.spec.ts`, mas antes de iniciar os nossos testes, precisamos criar nosso repositório in-Memory assim como feito anteriormente.
@@ -3514,7 +3514,7 @@ describe("Authenticate User", () => {
 });
 ```
 
-## Aula LXXXIX
+## Aula XCII
 > Imports da Aplicação
 
 Antes de seguir com os testes vamos aprender uma configuração para facilitar nossos imports. Algumas vezes no nosso import precisamos voltar várias pastas para podermos importar alguma classe/funcionalidade. Para faciliar esses imports vamos utilizar uma configuração no typescript, que nada mais é que um mapeamento das pastas que queremos referenciar. Em `tsconfig.json` vamos fazer da seguinte maneira:
@@ -3556,7 +3556,7 @@ Para que p ts-node-dev entenda essas importações vamos instalar `yarn add tscn
 ```
 Ex.: `import { ICreateUserDTO } from "@modules/accounts/dtos/ICreateUserDTO";`
 
-## Aula XC
+## Aula XCIII
 > Corrigindo as importações
 
 Inicialment vamos configurar o jest para que ele entenda a maneira com a qual estamos importando agora, para isso:
@@ -3576,14 +3576,14 @@ export default {
 
 Agora com o jest e o ts-node-dev reconhecendo nossas importações, vamos terminar de finalizar as informações no restante dos arquivos.
 
-## Aula XC
+## Aula XCIV
 > Refatorando a aplicação
 
 O que vamos fazer agora é separar ainda mais as responsabilidades. Primeira regra: o que for de uma camada externa vamos agrupar na pasta `infra/` que vamos criar dentro de cars e accounts (e será repetido para os demais módulos). Dentro de `infra/` vamos criar a pasta `typeorm/` e enviar  a entidade que está dentro do diretório do módulo. Ainda dentro da pasta `typeorm/` criaremos o diretório `repositories` e mover o arquivo onde está implementado (na pasta implementations) o repositório do módulo e caso necessário, corrigir as importações.
 Seguindo ainda a lógica da pasta `infra/`, vimos criar dentro da pasta `shared/`, outro dretório `infra/` e nela uma pasta `http/` onde iremos depositar partes referentes ao express, a começar com a pasta `midlewares/`, `routes/` e o arquivo `server.ts` e mover a pasta `errors/` para a pasta `shared/` já que usaremos para toda nossa aplicação. Junto com a pasta `http/` vamos realocar a pasta `database/` onde estão os arquivos referentes ao typeorm, renomenado o diretório para `typeorm/`.
 Para finalizar vamos mudar a parte do nosso script que referencia o arquivo `server.ts`, mudando o trecho `src/server.ts` para `src/shared/infra/http/server.ts`. E depois disso só vamos arrumar as importações da nossa aplicação.
 
-## Aula XCI
+## Aula XCV
 > Escrevendo os requisitos da aplicação
 
 **RF** - Requisitos Funcionais
@@ -3668,12 +3668,12 @@ Regras de negócio são critérios e restrições informados são regras, e regr
 - Não deve ser possível cadastrar um novo alugel caso já exista um aberto  parao mesmo usuário
 - Não deve ser possível cadastrar um novo alugel caso já exista um aberto  parao mesmo carro
 
-## Aula XCII
+## Aula XCVI
 > Alterando a importação dos repositórios
 
 Aqui vamos corrigir as importações que não estão seguindo nosso padrão os arquivos de repositório em memória e remover as pastas de implementação.
 
-## Aula XCIII
+## Aula XCVII
 > Criando migrations do carro
 
 Para dar continuidade na nossa aplicação vamos agora criar a tablea de `cars`criando nossa migrations com o comando `yarn typeorm migration:create -n CreateCars`, mas antes vamos alterar o caminho das migrations no `ormconfig.json`.
@@ -3780,7 +3780,7 @@ export class CreateCars1625310735313 implements MigrationInterface {
 }
 ```
 
-## Aula XCIV
+## Aula XCVIII
 > TDD na Prática
 
 Vamos começar criando nossos casos de uso um oouco diferente, vamos iniciar com os testes, vamos usar a metodologia TDD.
@@ -3954,7 +3954,7 @@ class Car {
 export { Car };
 ```
 
-## Aula XCV
+## Aula XCIX
 > Continuando caso de uso de carros
 
 No nosso caso de uso vamos deixar comentado os trechos de código que pertencem ao tsyringe, o `@inject()` e o `@injectable()` pois só será necessário quando finalizarmos nossos testes e integrarmos essa parte da aplicação ao nosso banco de dados.
@@ -4095,7 +4095,7 @@ it("should be able to create a new car", async () => {
 });
 ```
 
-## Aula XCVI
+## Aula C
 > Estruturando a Entidade de Carros
 
 Nessa aula vamos integrar o typeorm nessa parte da aplicação começando com a nossa entidade Car.
@@ -4146,7 +4146,7 @@ class Car {
   constructor() {
     if (!this.id) {
       this.id = uuidv4();
-      // seta availabel como true
+      // seta Available como true
       this.available = true;
     }
   }
@@ -4259,9 +4259,9 @@ import { carsRoutes } from "./cars.routes";
 // ... RESTO DO CÓDIGO
 router.use("/cars", carsRoutes);
 ```
-Finlizamos testanto o código no insomnia.
+Finlizamos testanto o código no insomnia
 
-## Aula XCVII
+## Aula CI
 > Criando seed de usuário
 
 Na nossa estrutura de criação de usuário atualmente não conseguimos sinalizar que ele é um admin ou não para evitar manipulações por parte de outros usuários maliciosos. Para resoler esse problema vamos utilizar o conceito de seed pra a criação do usuário admin, rodando uma query direto na aplicação como veremos a seguir.
@@ -4318,7 +4318,7 @@ Para finalizar precisamos executar o nosso `seed/admin.ts`. Dessa maneira, vamos
 ```
 E assim pode star nossa aplicação e executar o script com `yarn seed:admin`, criando assim nosso usuário admin.
 
-## Aula XCVII
+## Aula CII
 > Criando middleware de administrador
 
 Na criação desse middleware vamos pegar o usuário que é enviado no request a partir do middleware ensureuthenticated, e verificar se o `isAdmin` é `true` e retornar o `net()`, simples assim. Então na pasta em `shared/infra/http/middlewares/` vamos criar  o arquivo `ensureAdmin.ts` com a seguinte estrutura:
@@ -4384,10 +4384,10 @@ specificationsRoutes.post(
 );
 ```
 
-## Aula XCVIII
+## Aula CIII
 > Listando carros disponíveis
 
-Para fazer a listagem de carros, antes de tudo precisamos criar um useCase no módulo de `cars` que vamos chamar de `listCars/` e juntamente o `ListCarsUseCase.ts` e `ListCarsUseCase.spec.ts`. Para termos como listar todos os carros e os filtros opicionais de nome, marca ou categoria, é necessário um método no repositório, que que essa parte da aplicação é de função dele, então antes de passarmos para o useCase e o teste, vamos ajustar nosso repositório.
+Para fazer a listagem de carros, antes de tudo precisamos criar um useCase no módulo de `cars` que vamos chamar de `listAvailableCars/` e juntamente o `listAvailableCarsUseCase.ts` e `listAvailableCarsUseCase.spec.ts`. Para termos como listar todos os carros e os filtros opicionais de nome, marca ou categoria, é necessário um método no repositório, que que essa parte da aplicação é de função dele, então antes de passarmos para o useCase e o teste, vamos ajustar nosso repositório.
 **`ICarsRepository.ts`:**
 ```ts
 interface ICarsRepository {
@@ -4422,7 +4422,7 @@ class CarsRepositoryInMemory{
       
       if (
         // se estiver disponíve e
-        car.available === true &&
+        car.available === true ||
         // a marca existir e a marca do carro for igual a marca passada, retorna esse aí
                                       // OU
         ((brand && car.brand === brand) ||
@@ -4443,7 +4443,7 @@ class CarsRepositoryInMemory{
 }
 ```
 Com o repositó de teste criados podemos prosseguir e criar nosso useCase.
-**`ListCarsUseCase.ts`:**
+**`listAvailableCarsUseCase.ts`:**
 ```ts
 // aqui informamos que dados serão recebidos no método execute 
 interface IRequest {
@@ -4452,7 +4452,7 @@ interface IRequest {
   name?: string;
 }
 
-class ListCarsUseCase {
+class listAvailableCarsUseCase {
   // informando que tipo de objeto será passado no useCase quando for instanciado
   constructor(private carsRepository: ICarsRepository) {}
 
@@ -4467,20 +4467,20 @@ class ListCarsUseCase {
     return cars;
   }
 }
-export { ListCarsUseCase };
+export { listAvailableCarsUseCase };
 ```
 
-**`ListCarsUseCase.spec.ts`:**
+**`listAvailableCarsUseCase.spec.ts`:**
 ```ts
 // criando as variáveis de useCase e repository
-let listCarsUseCase: ListCarsUseCase;
+let listAvailableCarsUseCase: listAvailableCarsUseCase;
 let carsRepositoryInMemory: CarsRepositoryInMemory;
 
 describe("List Cars", () => {
   // instanciando antes de cada teste
   beforeEach(() => {
     carsRepositoryInMemory = new CarsRepositoryInMemory();
-    listCarsUseCase = new ListCarsUseCase(carsRepositoryInMemory);
+    listAvailableCarsUseCase = new listAvailableCarsUseCase(carsRepositoryInMemory);
   });
   // Teste para listar todos os carros disponíveis
   it("should be able to list all available cars", async () => {
@@ -4493,12 +4493,12 @@ describe("List Cars", () => {
       fine_amount: 100,
       license_plate: "DFG-4454",
     });
-    const cars = await listCarsUseCase.execute({});
-    expect(cars).toEqual([car]); // PROBLEMA AKI!!!
+    const cars = await listAvailableCarsUseCase.execute({});
+    expect(cars).toEqual([car]);
   });
 
-  // Teste para listar todos os carros disponíveis por nome
-  it("should be able to list all available cars by name", async () => {
+  // Teste para listar todos os carros disponíveis por marca
+  it("should be able to list all available cars by marca", async () => {
     const car = await carsRepositoryInMemory.create({
       name: "Car2",
       brand: "Car_brand_test",
@@ -4508,14 +4508,15 @@ describe("List Cars", () => {
       fine_amount: 100,
       license_plate: "DFG-4454",
     });
-    const cars = await listCarsUseCase.execute({
+    const cars = await listAvailableCarsUseCase.execute({
       brand: "Car_brand_test",
     });
     expect(cars).toEqual([car]);
   });
 });
 ```
-## Aula XCIX
+
+## Aula CIV
 > Continuação da listagem de carros disponíveis
 
 Vamos dar continuidade aos nossos testes antes da implementação em nosso `CarsRepository`. Para isso vamos adicionar os outros doi testes com o name e com o category_id.
@@ -4630,7 +4631,8 @@ const listAvailableCarsController = new ListAvailableCarsController();
 carsRoutes.get("/available", listAvailableCarsController.handle);
 // RESTANTE DO CÓDIGO
 ```
-## Aula C
+
+## Aula CV
 > Criando Migrations Especificação de carros(Many to Many)
 
 Continuando nossa aplicação, vamos criar aqui uma tabela de relacionamentos, fazendo a ligação do id do carro ao id da especificação. Para isso, começaremos execuando `yarn typeorm migration:create -n CreateSpecificationsCars` e seguir a seguinte estrutura:
@@ -4709,7 +4711,7 @@ export class CreateSpecificationsCars1625478365910
 ```
 E por final executar nossa migration: `yarn typeorm migration:run`.
 
-## Aula CI
+## Aula CVI
 > Caso de uso do cadastro de especificação para carro
 
 Vamos alterar nossa Entity de `Car` para que ele receba as propriedades das especificações que iremos cadastrar. Para fazer a referencia desses dados, precisamos adicionar o seguinte trecho ao nosso arquivo `Car.ts`:
@@ -4823,6 +4825,203 @@ describe("Create Car Specification", () => {
 });
 ```
 
+## Aula CVII
+> Continuação dos CreateCarSpecificationUseCase
+
+O que vamos fazer nessa aula é salvar as specifications no repositório. Nisso, voltando para o useCase vamos ter:
+**`CreateCarSpecificationUseCase.ts`:**
+```ts
+// RESTANTE D CÓDIGO
+class CreateCarSpecificationUseCase {
+  // Parte do código visto anteriormente ⤵
+  // constructor(
+  //   private carsRepository: ICarsRepository,
+    private specificationsRepository: ISpecificationsRepository // DECLARAÇÃO PARA PODER SER FEITO O INSTÂNCIMANTO DO USECASE CORRETAMENTE 
+  // ) {}
+  // async execute({ car_id, specifications_id }: IRequest): Promise<void> {
+  //   const carExist = await this.carsRepository.findById(car_id);
+  //   if (!carExist) {
+  //     throw new AppError("Car doesn't exist!");
+  //   }
+
+  // Retorna um array de Specification
+  // Vamos crir em eguida o Método finByIds
+    const specifications = await this.specificationsRepository.findByIds(
+      specifications_id
+    );
+    // Vamos gravar o array de specification que findByIds trouxe no carExist.specifications
+    carExist.specifications = specifications;
+    // Passando para o repository
+    // Teremos que alterar em breveo carsRepository pois na criação do car não existe parâmetro de specification
+    await this.carsRepository.create(carExist);
+  }
+}
+export { CreateCarSpecificationUseCase };
+```
+
+Para adicionar o método `findByIds()` ao repositório de specifications, vamos na interface dele declará-lo.
+
+**`ISpecificationsRepository.ts`:**
+```ts
+interface ISpecificationsRepository {
+  // RESTO DO CÓDIGO 
+  findByIds(ids: string[]): Promise<Specification[]>;
+}
+```
+Implementando no repositório de teste:
+Na pasta in-memory do módulo `cars` vamos criar o arquivo `SpecificationsRepositoryInMemory.ts`
+**`SpecificationsRepositoryInMemory.ts`:**
+```ts
+class SpecificationsRepositoryInMemory implements ISpecificationsRepository {
+  specifications: Specification[] = [];
+
+  async create({ name, description }: ICreateSpecificationDTO): Promise<void> {
+    const specification = new Specification();
+    Object.assign(specification, {
+      description,
+      name,
+    });
+    this.specifications.push(specification);
+  }
+  async findByName(name: string): Promise<Specification> {
+    return this.specifications.find(
+      (specification) => specification.name === name
+    );
+  }
+  async findByIds(ids: string[]): Promise<Specification[]> {
+    // Filtre do meu repositório de specifications
+    const allSpesifications = this.specifications.filter((specification) =>
+    // as specifications qe estão no array 'ids'
+      ids.includes(specification.id)
+    );
+    return allSpesifications;
+  }
+}
+export { SpecificationsRepositoryInMemory };
+```
+Repositório ✔, useCase ✔, vamos agora adicionar o parâmetro de specification a criação de um `car`, antes de ir ao repositório vamos declarar na interface `ICreateCarDTO`.
+**`ICreateCarDTO.ts`:**
+```ts 
+interface ICreateCarDTO {
+  // RESTANTE DOS PARÂMETROS
+  // vamos deixar specifications como opicional pois na criação do carro não será ṕossível (por enquanto) adicionar as specifications
+  specifications?: Specification[];
+}
+export { ICreateCarDTO };
+```
+Declarado na iterface podemos repassar aos repositórios tanto de teste como do typeorm.
+
+**`CarsRepositoryInMemory.ts`:**
+```ts
+class {
+  // RESTANTE DO CÓDIGO
+  async create({
+    brand,
+    category_id,
+    daily_rate,
+    description,
+    fine_amount,
+    license_plate,
+    name,
+    specifications,
+  }: ICreateCarDTO): Promise<Car> {
+    const car = new Car();
+
+    Object.assign(car, {
+      brand,
+      category_id,
+      daily_rate,
+      description,
+      fine_amount,
+      license_plate,
+      name,
+      specifications,
+    });
+
+    this.cars.push(car);
+    return car;
+  }
+}
+```
+
+**`CarsRepository.ts`:**
+```ts
+class{
+  // RESTANTE DO CÓDIGO
+  async create({
+    brand,
+    category_id,
+    daily_rate,
+    description,
+    fine_amount,
+    license_plate,
+    name,
+    specifications,
+  }: ICreateCarDTO): Promise<Car> {
+    const car = this.repository.create({
+      brand,
+      category_id,
+      daily_rate,
+      description,
+      fine_amount,
+      license_plate,
+      name,
+      specifications,
+    });
+
+    this.repository.save(car);
+
+    return car;
+  }
+}
+```
+E finalmente vamos aos testes, que no momento encontram-se dessa forma:
+```ts
+let createCarSpecificationUseCase: CreateCarSpecificationUseCase;
+let carsRepositoryInMemory: CarsRepositoryInMemory;
+let specificationsRepositoryInMemory: SpecificationsRepositoryInMemory;
+describe("Create Car Specification", () => {
+  beforeEach(() => {
+    carsRepositoryInMemory = new CarsRepositoryInMemory();
+    specificationsRepositoryInMemory = new SpecificationsRepositoryInMemory();
+    createCarSpecificationUseCase = new CreateCarSpecificationUseCase(
+      carsRepositoryInMemory,
+      specificationsRepositoryInMemory
+    );
+  });
+
+  it("should not be able to add a new specification to a now-existent car", async () => {
+    expect(async () => {
+      const car_id = "123";
+      const specifications_id = ["54321"];
+
+      await createCarSpecificationUseCase.execute({
+        car_id,
+        specifications_id,
+      });
+    }).rejects.toBeInstanceOf(AppError);
+  });
+
+  it("should be able to add a new specification to the car", async () => {
+    const car = await carsRepositoryInMemory.create({
+      name: "Name Car",
+      brand: "Brand",
+      category_id: "category",
+      daily_rate: 100,
+      description: "Description Car",
+      fine_amount: 60,
+      license_plate: "ABC-1234",
+    });
+
+    const specifications_id = ["54321"];
+    
+    await createCarSpecificationUseCase.execute({
+      car_id: car.id,
+      specifications_id,
+    });
+  });
+});
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
