@@ -4515,6 +4515,121 @@ describe("List Cars", () => {
   });
 });
 ```
+## Aula XCIX
+> Continuação da listagem de carros disponíveis
+
+Vamos dar continuidade aos nossos testes antes da implementação em nosso `CarsRepository`. Para isso vamos adicionar os outros doi testes com o name e com o category_id.
+```ts
+it("should be able to list all available cars by name", async () => {
+  const car = await carsRepositoryInMemory.create({
+    name: "Car3",
+    brand: "Car_brand_test",
+    category_id: "category_id",
+    daily_rate: 140,
+    description: "Carro massa",
+    fine_amount: 100,
+    license_plate: "DFG-2454",
+  });
+  const cars = await listAvailableCarsUseCase.execute({
+    name: "Car3",
+  });
+  expect(cars).toEqual([car]);
+});
+
+it("should be able to list all available cars by category", async () => {
+  const car = await carsRepositoryInMemory.create({
+    name: "Car3",
+    brand: "Car_brand_test",
+    category_id: "category_id_test",
+    daily_rate: 140,
+    description: "Carro massa",
+    fine_amount: 100,
+    license_plate: "DFG-2454",
+  });
+  const cars = await listAvailableCarsUseCase.execute({
+    category_id: "category_id_test",
+  });
+  expect(cars).toEqual([car]);
+});
+```
+
+Teste concluído vamos ao nosso arquivo `CarsRepository.ts` e implemntar o método `findAvailable()`.
+```ts
+class CarsRepository{
+// ...RESTANTE DO CÓDIGO
+  async findAvailable(
+    brand?: string,
+    category_id?: string,
+    name?: string
+  ): Promise<Car[]> {
+    // criando uma query
+    const carsQuery = await this.repository
+      .createQueryBuilder("c")
+      .where("available = :available", { available: true });
+    // se recebermos marca será adicionado esse trecho a query
+    if (brand) {
+      carsQuery.andWhere("brand = :brand", { brand });
+    }
+    // se recebermos name será adicionado esse trecho a query
+    if (name) {
+      carsQuery.andWhere("name = :name", { name });
+    }
+    // se recebermos category_id será adicionado esse trecho a query
+    if (category_id) {
+      carsQuery.andWhere("category_id =  :category_id", { category_id });
+    }
+    // execute a query
+    const cars = await carsQuery.getMany();
+    return cars;
+  }
+}
+```
+Método do repositório criado vamos fazer uma pequena modificação no no useCase para que ele possa se comunicar com o controller e com nosso repositório, que é adicionar o `@inject()` e o `@injectable()` tsrynge.
+```ts
+@injectable()
+class ListAvailableCarsUseCase {
+  constructor(
+    @inject("CarsRepository")
+    private carsRepository: ICarsRepository
+  ) {}
+  async execute({ brand, category_id, name }: IRequest): Promise<Car[]> {
+    const cars = await this.carsRepository.findAvailable(
+      brand,
+      category_id,
+      name
+    );
+    return cars;
+  }
+}
+```
+Agora vamos criar o `ListAvailableCarsController.ts` com a seguinte estrutura:
+```ts
+class ListAvailableCarsController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    const { brand, name, category_id } = request.query;
+    // instanciando o useCase com tsyringe
+    const listAvailableCarsUseCase = container.resolve(
+      ListAvailableCarsUseCase
+    );
+    const cars = await listAvailableCarsUseCase.execute({
+      // para garantir que vamos receber strings pela request.query, tipamos aqui
+      brand: brand as string,
+      name: name as string,
+      category_id: category_id as string,
+    });
+    return response.json(cars);
+  }
+}
+export { ListAvailableCarsController };
+```
+
+Para finalizar vamos criar a rota.
+```ts
+// RESTANTE DO CÓDIGO
+const listAvailableCarsController = new ListAvailableCarsController();
+carsRoutes.get("/available", listAvailableCarsController.handle);
+// RESTANTE DO CÓDIGO
+```
 
 
 <h4 align="center"> 
