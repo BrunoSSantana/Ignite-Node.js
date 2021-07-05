@@ -4630,6 +4630,84 @@ const listAvailableCarsController = new ListAvailableCarsController();
 carsRoutes.get("/available", listAvailableCarsController.handle);
 // RESTANTE DO CÓDIGO
 ```
+## Aula C
+> Criando Migrations Especificação de carros(Many to Many)
+
+Continuando nossa aplicação, vamos criar aqui uma tabela de relacionamentos, fazendo a ligação do id do carro ao id da especificação. Para isso, começaremos execuando `yarn typeorm migration:create -n CreateSpecificationsCars` e seguir a seguinte estrutura:
+```ts
+export class CreateSpecificationsCars1625478365910
+  implements MigrationInterface
+{
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createTable(
+      new Table({
+        // criando tabela
+        name: "specifications_cars",
+        columns: [
+          {
+            name: "car_id",
+            type: "uuid",
+          },
+          {
+            name: "specification_id",
+            type: "uuid",
+          },
+          {
+            name: "created_at",
+            type: "timestamp",
+            default: "now()",
+          },
+        ],
+      })
+    );
+    await queryRunner.createForeignKey(
+      // referenciando tabela local
+      "specifications_cars",
+      new TableForeignKey({
+        // nomeando FK
+        name: "FKSpecificationCar",
+        // referenciando tabela estrangeira
+        referencedTableName: "specifications",
+        // referenciando coluna estranngeira
+        referencedColumnNames: ["id"],
+        // referenciando coluna local
+        columnNames: ["specification_id"],
+        onDelete: "SET NULL",
+        onUpdate: "SET NULL",
+      })
+    );
+    await queryRunner.createForeignKey(
+      // referenciando tabela local
+      "specifications_cars",
+      // nomeando FK
+      new TableForeignKey({
+        name: "FKCarSpecification",
+        // referenciando tabela estrangeira
+        referencedTableName: "cars",
+        // referenciando coluna estranngeira
+        referencedColumnNames: ["id"],
+        // referenciando coluna local
+        columnNames: ["car_id"],
+        onDelete: "SET NULL",
+        onUpdate: "SET NULL",
+      })
+    );
+  }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropForeignKey(
+      "specifications_cars",
+      "FKCarSpecification"
+    );
+    await queryRunner.dropForeignKey(
+      "specifications_cars",
+      "FKSpecificationCar"
+    );
+
+    await queryRunner.dropTable("specifications_cars");
+  }
+}
+```
+E por final executar nossa migration: `yarn typeorm migration:run`
 
 
 <h4 align="center"> 
