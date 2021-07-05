@@ -4707,7 +4707,121 @@ export class CreateSpecificationsCars1625478365910
   }
 }
 ```
-E por final executar nossa migration: `yarn typeorm migration:run`
+E por final executar nossa migration: `yarn typeorm migration:run`.
+
+## Aula CI
+> Caso de uso do cadastro de especificação para carro
+
+Vamos alterar nossa Entity de `Car` para que ele receba as propriedades das especificações que iremos cadastrar. Para fazer a referencia desses dados, precisamos adicionar o seguinte trecho ao nosso arquivo `Car.ts`:
+```ts
+class Car{
+  // ...
+  // Tipo de relação
+  // para tabelas de relacionamento sempre será ManyToMany
+  @ManyToMany(() => Specification)
+  @JoinTable({
+    // tabela que estamos referenciando
+    name: "specifications_cars",
+    // coluna que referencia a coluna dessa classe
+    joinColumns: [{ name: "car_id" }],
+    // coluna que referencia a coluna da tabela que passamos no ManyToMany
+    inverseJoinColumns: [{ name: "specifications_cars" }],
+  })
+  specifications: Specification[];}
+  // ...
+```
+
+Agora vamos criar um serviço que cria as especificações. No diretório de useCase do módulo de `cars`, vamos criar o useCase `creatCarSpecification` com os arquivos inicis de useCase e useCase (`CreateCarSpecificationUseCase.ts`) de Test (`CreateCarSpecificationUseCase.spec.ts`) como sempre fazemos.
+
+**`CreateCarSpecificationUseCase.ts`:**
+```ts
+// A interface da nossa request
+interface IRequest {
+  car_id: string;
+  specifications_id: string[];
+}
+class CreateCarSpecificationUseCase {
+  constructor(
+    private carsRepository: ICarsRepository
+  ) {}
+  async execute({ car_id, specifications_id }: IRequest): Promise<void> {
+    // aqui vamos buscar se o carro existe 
+    // o método findById() ainda não exite, mas já vamos criar antes de passarmos para os testes
+    const carExist = await this.carsRepository.findById(car_id);
+    // se não existir não tem como atribuir uma specification a ele
+    if (!carExist) {
+      throw new AppError("Car doesn't exist!");
+    }
+  }
+}
+export { CreateCarSpecificationUseCase };
+```
+Criando o método adicionando método a interface
+**`ICarsrepository.ts`:**
+```ts
+interface ICarsRepository {
+  // RESTANTE DA INTERFACE
+  findById(car_id: string): Promise<Car>;
+}
+```
+
+Implementando método em repositório para os testes
+**`CarRepositoryInMemory.ts`:**
+```ts
+class CarRepositoryInMemory{
+  // RESTANTE DA CLASSE
+  async findById(car_id: string): Promise<Car> {
+    return this.cars.find((car) => car.id === car_id);
+  }
+}
+```
+Com método criado, podemos começar a criar nossos testes
+**`CreateCarSpecificationUseCase.spec.ts`:**
+```ts
+// iniciando nossas variáveis
+let createCarSpecificationUseCase: CreateCarSpecificationUseCase;
+let carsRepositoryInMemory: CarsRepositoryInMemory;
+describe("Create Car Specification", () => {
+  beforeEach(() => {
+    // instanciando useCase e repository antes de cada teste
+    carsRepositoryInMemory = new CarsRepositoryInMemory();
+    createCarSpecificationUseCase = new CreateCarSpecificationUseCase(
+      carsRepositoryInMemory
+    );
+  });
+  // não cadastar specification caso carro não exista
+  it("should not be able to add a new specification to a now-existent car", async () => {
+    // espera-se que ao passar os parâmetros de car_id e specifications_id ao usecase
+    expect(async () => {
+      const car_id = "123";
+      const specifications_id = ["54321"];
+      await createCarSpecificationUseCase.execute({
+        car_id,
+        specifications_id,
+      });
+      // seja rejitado com a instância do tipo AppError (a mesma que passamos no if do useCase)
+    }).rejects.toBeInstanceOf(AppError);
+  });
+  // Seja possível adiciona uma nova specificação a um carro
+  // teste incompleto
+  it("should be able to add a new specification to the car", async () => {
+    const car = await carsRepositoryInMemory.create({
+      name: "Name Car",
+      brand: "Brand",
+      category_id: "category",
+      daily_rate: 100,
+      description: "Description Car",
+      fine_amount: 60,
+      license_plate: "ABC-1234",
+    });
+    const specifications_id = ["54321"];
+    await createCarSpecificationUseCase.execute({
+      car_id: car.id,
+      specifications_id,
+    });
+  });
+});
+```
 
 
 <h4 align="center"> 
