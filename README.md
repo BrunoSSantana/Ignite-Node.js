@@ -5482,6 +5482,73 @@ carsRoutes.post(
 ```
 Router ✅
 
+## Aula CXI
+> Criando migrations do aluguel
+
+Como já fizemos diversas vese o migrations, vamos passar mais rápido por essa questão e deixar apenas o código como fonte de consulta e resalta de uma falta na criação da tabela de `users` na coluna id faltou atribuir a propriedade `isPrimary: true`.
+
+criaando migration:
+```sh
+yarn typeorm migration: create -n CreateRentals
+```
+**`CreateRentals.ts`:**
+```ts
+import { MigrationInterface, QueryRunner, Table } from "typeorm";
+
+export class CreateRentals1625590443953 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createTable(
+      new Table({
+        name: "rentals",
+        columns: [
+          { name: "id", type: "uuid", isPrimary: true },
+          { name: "car_id", type: "uuid" },
+          { name: "user_id", type: "uuid" },
+          { name: "start_date", type: "timestamp", default: "now()" },
+          { name: "end_date", type: "timestamp" },
+          { name: "expected_return_date", type: "timestamp" },
+          { name: "total", type: "numeric" },
+          { name: "created_at", type: "timestamp", default: "now()" },
+          { name: "updated_at", type: "timestamp", default: "now()" },
+        ],
+        foreignKeys: [
+          {
+            name: "FKCarRental",
+            referencedTableName: "cars",
+            referencedColumnNames: ["id"],
+            columnNames: ["car_id"],
+            onDelete: "SET NULL",
+            onUpdate: "SET NULL",
+          },
+          {
+            name: "FKUserRental",
+            referencedTableName: "users",
+            referencedColumnNames: ["id"],
+            columnNames: ["user_id"],
+            onDelete: "SET NULL",
+            onUpdate: "SET NULL",
+          },
+        ],
+      })
+    );
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable("rentals");
+  }
+}
+```
+
+Query para adicionar primary key a coluna id da tabela users:
+```sql
+ALTER TABLE USERS ADD PRIMARY KEY(id)
+```
+
+Executando migration:
+```sh
+yarn typeorm migration:run
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
