@@ -5023,6 +5023,264 @@ describe("Create Car Specification", () => {
 });
 ```
 
+## Aula CVIII
+> Finalizando CreateCarSpecificationUseCase
+
+No teste, `should be able to add a new specification to the car`, nós vamos agora adicionar uma specification para de fato usar o teste ao qu ele foi proposto, para isso nós vamos umsa um estratégia que pede que no momento que a specification seja criada ela retorne essa criação. Devido a isso ao finalizarmos no arquivo de teste, vamos alterar o `SpecificationsRepository.ts` e por consequência vamos ter que alterar também o `ISpecificationsRepository.ts` e `SpecificationsRepositoryInMemory.ts`.
+
+**`ISpecificationsRepository.ts`:**
+```ts
+interface ICreateSpecificationDTO {
+  name: string;
+  description: string;
+}
+interface ISpecificationsRepository {
+  create({
+    name,
+    description,
+    // Retorna a specification
+  }: ICreateSpecificationDTO): Promise<Specification>;
+  findByName(name: string): Promise<Specification>;
+  findByIds(ids: string[]): Promise<Specification[]>;
+}
+export { ISpecificationsRepository, ICreateSpecificationDTO };
+```
+
+**`SpecificationsRepository.ts`:**
+```ts
+class SpecificationsRepository {
+  // Restante do código
+  async create({
+    name,
+    description,
+    // Tipo do retorno alterado
+  }: ICreateSpecificationDTO): Promise<Specification> {
+    const specification = this.repository.create({
+      name,
+      description,
+    });
+    await this.repository.save(specification);
+// retornando especificação
+    return specification;
+  }
+  // Restante do código
+}
+```
+**`SpecificationsRepositoryInMemory.ts`:**
+```ts
+class SpecificationsRepositoryInMemory {
+  // Restante do código
+  async create({
+    name,
+    description,
+  }: ICreateSpecificationDTO): Promise<Specification> {
+    const specification = new Specification();
+    Object.assign(specification, {
+      description,
+      name,
+    });
+    this.specifications.push(specification);
+    return specification;
+  }
+  // Restante do código
+}
+```
+Antes de mais nad vamos terminar de implementar o findByIds no `SpecificationsRepository`.
+
+**`SpecificationsRepository.ts`:**
+```ts
+class SpecificationsRepository {
+  // Restante do código
+  async findByIds(ids: string[]): Promise<Specification[]> {
+    // usando o medo do typeorm
+    const specifications = await this.repository.findByIds(ids);
+    return specifications;
+  }
+  // Restante do código
+}
+```
+No fluxo que temos agora no update que estamos fazendo teoricamente será criado um novo `Car` já que o id não é passado, entõ vamos agora corrigir isso.
+
+**`ICreateCarDTO.ts`:**
+```ts
+interface ICreateCarDTO {
+  // RESTANTE DO CÓDIGO
+  id?: string;
+}
+```
+**`CarsRepository.ts`:**
+```ts
+class CarsRepository implements ICarsRepository {
+  // RESTANTE DO CÓDIGO
+  async create({
+    brand,
+    category_id,
+    daily_rate,
+    description,
+    fine_amount,
+    license_plate,
+    name,
+    specifications,
+    id,
+  }: ICreateCarDTO): Promise<Car> {
+    const car = this.repository.create({
+      brand,
+      category_id,
+      daily_rate,
+      description,
+      fine_amount,
+      license_plate,
+      name,
+      specifications,
+      id,
+    });
+
+    this.repository.save(car);
+
+    return car;
+  }
+  // RESTANTE DO CÓDIGO
+}
+```
+**`CarsRepositoryInMemory.ts`:**
+```ts
+class CarsRepositoryInMemory implements ICarsRepository {
+  // RESTANTE DO CÓDIGO
+  async create({
+    brand,
+    category_id,
+    daily_rate,
+    description,
+    fine_amount,
+    license_plate,
+    name,
+    specifications,
+    id,
+  }: ICreateCarDTO): Promise<Car> {
+    const car = new Car();
+
+    Object.assign(car, {
+      brand,
+      category_id,
+      daily_rate,
+      description,
+      fine_amount,
+      license_plate,
+      name,
+      specifications,
+      id,
+    });
+
+    this.cars.push(car);
+    return car;
+  }
+  // RESTANTE DO CÓDIGO
+}
+```
+Agora Podemos nos encaminhar pra finalizar essa parte, vamos atualiza agora nosso useCase.
+
+**`CreateCarSpecificationUseCase.ts`:**
+```ts
+interface IRequest {
+  car_id: string;
+  specifications_id: string[];
+}
+@injectable()
+class CreateCarSpecificationUseCase {
+  constructor(
+    @inject("CarsRepository")
+    private carsRepository: ICarsRepository,
+    @inject("SpecificationsRepository")
+    private specificationsRepository: ISpecificationsRepository
+  ) {}
+  async execute({ car_id, specifications_id }: IRequest): Promise<Car> {
+    const carExist = await this.carsRepository.findById(car_id);
+    if (!carExist) {
+      throw new AppError("Car doesn't exist!");
+    }
+    const specifications = await this.specificationsRepository.findByIds(
+      specifications_id
+    );
+    carExist.specifications = specifications;
+    // Recriando car
+    await this.carsRepository.create(carExist);
+    // Retornando o car atualizado
+    return carExist;
+  }
+}
+export { CreateCarSpecificationUseCase };
+```
+
+
+```ts
+it("should be able to add a new specification to the car", async () => {
+  const car = await carsRepositoryInMemory.create({
+    name: "Name Car",
+      brand: "Brand",
+      category_id: "category",
+      daily_rate: 100,
+      description: "Description Car",
+      fine_amount: 60,
+      license_plate: "ABC-1234",
+    });
+
+    const specification = await specificationsRepositoryInMemory.create({
+      description: "teste description",
+      name: "teste name",
+    });
+
+    const specifications_id = [specification.id];
+
+    const specificationsCars = await createCarSpecificationUseCase.execute({
+      car_id: car.id,
+      specifications_id,
+    });
+    // Espera-se que que o novo car tenha a propriedade "specifications" 
+    expect(specificationsCars).toHaveProperty("specifications");
+    // Espera-se que o tamanho da nova specifications seja 1
+    expect(specificationsCars.specifications.length).toBe(1);
+  });
+```
+Terminado essa parte de teste vamos agora criar o o controller e em seguida adicionar as rotas da api.
+
+**`CreateCarSpecificationController`:**
+```ts
+class CreateCarSpecificationController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    // Buscando variáveis na requisição
+    const { id } = request.params;
+    const { specifications_id } = request.body;
+    // instnciando useCase
+    const createCarSpecificationUseCase = container.resolve(
+      CreateCarSpecificationUseCase
+    );
+    // Executando useCase
+    const car = await createCarSpecificationUseCase.execute({
+      car_id: id,
+      specifications_id,
+    });
+    // Retornado car atualizado 
+    return response.json(car);
+  }
+}
+export { CreateCarSpecificationController };
+```
+
+E para encerrar nossa rota:
+
+```ts
+// RESTO DO CÓDIGO
+const createCarSpecificationController = new CreateCarSpecificationController();
+// RESTO DO CÓDIGO
+carsRoutes.post(
+  "/specifications/:id",
+  ensureAuthenticated,
+  ensureAdmin,
+  createCarSpecificationController.handle
+);
+// RESTO DO CÓDIGO
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
