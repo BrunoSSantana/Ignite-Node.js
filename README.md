@@ -5395,6 +5395,93 @@ class CarsImagesRepository implements ICarsImagesRepository {
 export { CarsImagesRepository };
 ```
 
+## Aula CX
+> Caso de uso do cadastro de imagens do carro
+
+Para finalizar o cadastro das imagens dos carros vamos retornar e ver onde paramos na última aula e ver o que está faltando no todo-list abaixo.
+
+- [x] Migration
+- [x] Entity
+- [x] IRepository
+- [x] Repository
+- [ ] Container
+- [ ] UseCase
+- [ ] Controller
+- [ ] Router
+
+Então agora vamos configurar a comunicação do nosso repositório com o tsyringe no arquivo index.ts, localizado na pasta `shared/container/`.
+
+**`index.ts`:**
+```ts
+container.registerSingleton<ICarsImagesRepository>(
+  "CarsImagesRepository",
+  CarsImagesRepository
+);
+```
+Container ✅
+
+Agora no useCase:
+
+```ts
+// interface informando a tipagem
+interface IRequest {
+  car_id: string;
+  images_name: string[];
+}
+@injectable()
+class UploadCarImagesUseCase {
+  constructor(
+    // fazendo referência para o container do tsyringe
+    @inject("CarsImagesRepository")
+    private carsImagesRepository: ICarsImagesRepository
+  ) {}
+  async execute({ car_id, images_name }: IRequest): Promise<void> {
+    // já que tems um array, temos que percorrer ele e salvar cada imagem
+    images_name.map(async (image) => {
+      await this.carsImagesRepository.create(car_id, image);
+    });
+  }
+}
+export { UploadCarImagesUseCase };
+```
+UseCase ✅
+
+**`UploadCarImagesControllers.ts`:**
+
+```ts
+// interface como estratégia para poder apontr que será um array de images vindo no request.
+interface IFiles {
+  filename: string;
+}
+class UploadCarImagesController {
+  async heandle(request: Request, response: Response): Promise<Response> {
+    const { id } = request.params;
+    const images = request.files as IFiles[];
+    // instanciando useCase
+    const uploadCarImagesUseCase = container.resolve(UploadCarImagesUseCase);
+    // pegando apenas o filename do arquivo e passando para um array
+    const images_name = images.map((file) => file.filename);
+    // execuado o useCase
+    await uploadCarImagesUseCase.execute({ car_id: id, images_name });
+    return response.status(201).send();
+  }
+}
+export { UploadCarImagesController };
+```
+Controller ✅
+
+**`cars.routes.ts`:**
+```ts
+carsRoutes.post(
+  "/images/:id",
+  ensureAuthenticated,
+  ensureAdmin,
+  upload.array("images"),
+  uploadCarImagesController.heandle
+);
+```
+Router ✅
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
