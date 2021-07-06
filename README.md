@@ -5549,6 +5549,142 @@ Executando migration:
 yarn typeorm migration:run
 ```
 
+## Aula CXII
+> Criando os testes do aluguel
+
+Assim como fizemos anteriormente, vamos seguir o todo-list com as tasks para nos basearmos e termos uma melhor noção do que falta ser feito.
+
+- [x] Migration
+- [ ] Entity
+- [ ] IRepository
+- [ ] Repository
+- [ ] Container
+- [ ] UseCase
+- [ ] Controller
+- [ ] Router
+
+Primeiramente vamos seprar em um módulo a parte de alugueis, os `Rentals`, pois foi observado que essa seri a maneira mais adequada para tratar na nossa aplicação. Ainda, a nossa entidade, não iremos adicionar os decorators do typeorm por hora, apenas a estrutura básica. Então, na pasta do módulo rentals vamos criar o diretório `infra/typeorm/entities/` e nele a nossa enitity, `Rentals`.
+
+```ts
+class Rental {
+  id: string;
+  car_id: string;
+  user_id: string;
+  start_date: Date;
+  end_date: Date;
+  expected_return_date: Date;
+  total: number;
+  created_at: Date;
+  updated_at: Date;
+  constructor() {
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+  }
+}
+export { Rental };
+```
+Entity 🚧
+
+Agora vamos declarar alguns métodos que serão usados no nosso repositório. Na pasta do módulo `rentals` vamos adicionar o diretório `repositoies/` e nele adicionar o arquivo `IRentalsRepository.ts` com a seguinte estrutura:
+
+```ts
+interface IRentalsRepository {
+  findOpenRentalByCar(car_id: string): Promise<Rental>;
+  findOpenRentalByUser(user_id: string): Promise<Rental>;
+}
+export { IRentalsRepository };
+```
+IRepository 🚧
+
+Criado essa parte do IRepository vamos implementr no nosso repositório de tests e para isso vamos criar no diretório `repositories/` vamos criar uma pasta chamada `in-memory/` onde iremos criar o arquivo `RentalsRepositoryinMemory.ts`.
+
+**`RentalsRepositoryinMemory.ts`:**
+```ts
+class RentalsRepositoryInMemory implements IRentalsRepository {
+  //Criando array vasio para armazenar os rentals
+  rentals: Rental[] = [];
+  async findOpenRentalByCar(car_id: string): Promise<Rental> {
+    // retorne o rental se o seu car_id foi igual ao car_id que passamos e se o end_date estiver fazio
+    return this.rentals.find(
+      (rental) => rental.car_id === car_id && rental.end_date === null
+    );
+  }
+  async findOpenRentalByUser(user_id: string): Promise<Rental> {
+    // retorne o rental se o seu user_id foi igual ao user_id que passamos e se o end_date estiver fazio
+    return this.rentals.find(
+      (rental) => rental.user_id === user_id && rental.end_date === null
+    );
+  }
+}
+export { RentalsRepositoryInMemory };
+```
+IRepository 🚧
+
+Criado o repositório parcialmente, já podemos ira para o useCase. no módulo `rentals`, vamos criar a pasta `useCases/` onde vamos criar o arquivo `CreateRentalUseCase.ts` e por hora vamos adicionar a seguinte estrutura:
+
+```ts
+interface IRequest {
+  user_id: string;
+  car_id: string;
+  expected_return_date: Date;
+}
+class CreateRentalUseCase {
+  constructor(private rentalsRepository: IRentalsRepository) {}
+  async execute({
+    car_id,
+    expected_return_date,
+    user_id,
+  }: IRequest): Promise<void> {
+    // busca aluguel pelo id do carro
+    const carUnavailabel = await this.rentalsRepository.findOpenRentalByCar(
+      car_id
+    );
+    // caso tenha um aluguel desse carro, 
+    // apresentamos o erro informando que esse carro não está disponível
+    if (carUnavailabel) {
+      throw new AppError("Car is unavailable");
+    }
+    // busca u aluguel pelo id do usuário
+    const rentalOpenToUser = await this.rentalsRepository.findOpenRentalByUser(
+      user_id
+    );
+    // se o usuário tiver um alugel em nome dele no qual ainda não foi finalizado,
+    // apresentamos o erro informando que o usuário possui um aluguel ativo
+    if (rentalOpenToUser) {
+      throw new AppError("There's a rental in progress for user");
+    }
+    // retornando nulo apenas para n termos mais erros 😜
+    return null;
+  }
+}
+export { CreateRentalUseCase };
+```
+CreateRentalUseCase 🚧
+
+Agora vamos fazer apens um teste simples para iniciarmos por aqui. Então no diretório do useCase, `createRental/`, vamos adicionar o teste `CreateRentalUseCase.spec.ts`.
+
+```ts
+let createRentalUsecase: CreateRentalUseCase;
+let rentalsRepositoryInMemory: RentalsRepositoryInMemory;
+
+describe("Create Rental", () => {
+  beforeEach(() => {
+    rentalsRepositoryInMemory = new RentalsRepositoryInMemory();
+    createRentalUsecase = new CreateRentalUseCase(rentalsRepositoryInMemory);
+  });
+  it("shouuld be able  to create an new rental", async () => {
+    await createRentalUsecase.execute({
+      car_id: "123212",
+      expected_return_date: new Date(),
+      user_id: "452365",
+    });
+  });
+});
+```
+Test 🚧
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
