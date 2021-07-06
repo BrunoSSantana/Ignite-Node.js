@@ -5281,6 +5281,120 @@ carsRoutes.post(
 // RESTO DO CÓDIGO
 ```
 
+## Aula CIX
+> Criando migrations de imagens de carro
+
+Vamos criar uma tabela para guardar as imagens dos carros, para isso vamos criar mais uma tabela no nosso banco de dados com as migrations do typeorm.
+```bash
+yarn typeorm migrations:create -n CreateCarImages
+```
+Feito isso, vamos criar nossa tabela.
+
+**`CreateCarImages.ts`:**
+```ts
+export class CreateCarImages1625565503056 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createTable(
+      new Table({
+        name: "cars_image",
+        columns: [
+          { name: "id", type: "uuid", isPrimary: true },
+          { name: "car_id", type: "uuid" },
+          { name: "image_name", type: "varchar" },
+          { name: "created_at", type: "timestamp", default: "now()" },
+        ],
+        foreignKeys: [
+          {
+            name: "FKCarImage",
+            referencedTableName: "cars",
+            referencedColumnNames: ["id"],
+            columnNames: ["car_id"],
+            onDelete: "SET NULL",
+            onUpdate: "SET NULL",
+          },
+        ],
+      })
+    );
+  }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable("cars_image");
+  }
+}
+```
+Em seguida executamos o comando `yarn typeorm migration:run` para executarmos nossa migration e criarmos a tabela, cars_image, em nosso banco de dados.
+
+Apenas para nos basear e facilitar, a seguir temos um checklist dos passos que precisam ser seguidos até chegar a criação da nossa rota.
+
+- [x] Migration
+- [ ] Entity
+- [ ] IRepository
+- [ ] Repository
+- [ ] Container
+- [ ] UseCase
+- [ ] Test
+- [ ] Controller
+- [ ] Router
+
+Dessa maneira, vamos seguir para criação da nossa entidade.
+
+**`CarImage.ts`:**
+```ts
+// fazendo referencia da entidade para tabela
+@Entity("cars_image")
+class CarImage {
+  @PrimaryColumn()
+  id: string;
+
+  @Column()
+  car_id: string;
+
+  @Column()
+  image_name: string;
+
+  @CreateDateColumn()
+  created_at: Date;
+  constructor() {
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+  }
+}
+export { CarImage };
+```
+
+No diretório de `cars/repositories/` vamos criar:
+**`ICarsImagesRepository.ts`:**
+
+```ts
+interface ICarsImagesRepository {
+  create(car_id: string, image_name: string): Promise<CarImage>;
+}
+export { ICarsImagesRepository };
+```
+
+Implmentação do ICarsImagesRepository em `cars/infra/typeorm/repositories/`.
+
+```ts
+import { Repository } from "typeorm";
+
+import { ICarsImagesRepository } from "@modules/cars/repositories/ICarsImagesRepository";
+
+import { CarImage } from "../entities/CarImage";
+
+class CarsImagesRepository implements ICarsImagesRepository {
+  private repository: Repository<CarImage>;
+  async create(car_id: string, image_name: string): Promise<CarImage> {
+    // lembrando que o create não tem await pois ele so está montando nosso objeto
+    const carImage = this.repository.create({ car_id, image_name });
+    // e aqui tem await pois trata diretamente com nosso banco de dados na hor do salvamento.
+    await this.repository.save(carImage);
+    // retorndo nosso objeto
+    return carImage;
+  }
+}
+export { CarsImagesRepository };
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
