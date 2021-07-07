@@ -5684,6 +5684,154 @@ describe("Create Rental", () => {
 ```
 Test 🚧
 
+## Aula CXIII
+> Continuação do cadastro do aluguel
+
+Continuando o nosso projeto, vamos retomar a parte na parte repositório onde definir na interface e implementa no repositório do teste o método de criação do rental.
+
+
+**`IRentalRepository.ts`:**
+```ts
+interface IRentalsRepository {
+  create(data: ICreateRentalDTO): Promise<Rental>;
+  // RESTO DO CÓDIGO
+}
+export { IRentalsRepository };
+```
+
+Vamos criar a interface da requisição de create pois muito provavelmente iremos utilizá-la mais a diante na aplicação.
+
+**`ICreateRentalDTO.ts`:**
+```ts
+interface ICreateRentalDTO {
+  user_id: string;
+  car_id: string;
+  expected_return_date: Date;
+}
+export { ICreateRentalDTO };
+```
+
+Impelementando método de criação no repositório de testes.
+
+**`RentalRepositoryInMemory.ts`:**
+```ts
+class RentalsRepositoryInMemory implements IRentalsRepository {
+  rentals: Rental[] = [];
+
+  async create({
+    user_id,
+    car_id,
+    expected_return_date,
+  }: ICreateRentalDTO): Promise<Rental> {
+    const rental = new Rental();
+    Object.assign(rental, {
+      user_id,
+      car_id,
+      expected_return_date,
+      start_date: new Date(),
+    });
+
+    this.rentals.push(rental);
+
+    return rental;
+  }
+  // RESTO DO CÓDIGO
+}
+export { RentalsRepositoryInMemory };
+```
+
+Criando rental no useCase.
+
+**`CreateRentalUseCase.ts`:**
+```ts
+interface IRequest {
+  user_id: string;
+  car_id: string;
+  expected_return_date: Date;
+}
+class CreateRentalUseCase {
+  constructor(private rentalsRepository: IRentalsRepository) {}
+
+  async execute({
+    car_id,
+    expected_return_date,
+    user_id,
+  }: IRequest): Promise<Rental> {
+    const carUnavailabel = await this.rentalsRepository.findOpenRentalByCar(
+      car_id
+    );
+    if (carUnavailabel) { throw new AppError("Car is unavailable"); }
+    const rentalOpenToUser = await this.rentalsRepository.findOpenRentalByUser( user_id );
+    if (rentalOpenToUser) { throw new AppError("There's a rental in progress for user"); }
+    // criando e guardando na variável rental 
+    const rental = await this.rentalsRepository.create({
+      user_id,
+      car_id,
+      expected_return_date,
+    });
+    // retornando o rental
+    return rental;
+  }
+}
+export { CreateRentalUseCase };
+```
+
+Criando testes.
+
+**`CreateRentalUseCase.spec.ts`:**
+```ts
+let createRentalUsecase: CreateRentalUseCase;
+let rentalsRepositoryInMemory: RentalsRepositoryInMemory;
+
+describe("Create Rental", () => {
+  beforeEach(() => {
+    rentalsRepositoryInMemory = new RentalsRepositoryInMemory();
+    createRentalUsecase = new CreateRentalUseCase(rentalsRepositoryInMemory);
+  });
+  // deve ser capaz de criar um novo aluguel
+  it("should be able  to create an new rental", async () => {
+    const rental = await createRentalUsecase.execute({
+      car_id: "123212",
+      expected_return_date: new Date(),
+      user_id: "452365",
+    });
+    expect(rental).toHaveProperty("id");
+    expect(rental).toHaveProperty("start_date");
+  });
+  // não deve ser capaz de criar um novo aluguel se houver outra oportunidade para o mesmo usuário
+  it("should not be able to create an new rental if there is another opento to the same user", async () => {
+    expect(async () => {
+      await createRentalUsecase.execute({
+        car_id: "123212",
+        user_id: "452365",
+        expected_return_date: new Date(),
+      });
+
+      await createRentalUsecase.execute({
+        car_id: "123212",
+        expected_return_date: new Date(),
+        user_id: "452365",
+      });
+    }).rejects.toBeInstanceOf(AppError);
+  });
+  // não deve ser capaz de criar um novo aluguel se houver outra oportunidade para o mesmo carro
+  it("should not be able to create an new rental if there is another opento to the same car", async () => {
+    expect(async () => {
+      await createRentalUsecase.execute({
+        user_id: "341290",
+        car_id: "test",
+        expected_return_date: new Date(),
+      });
+
+      await createRentalUsecase.execute({
+        user_id: "452365",
+        car_id: "test",
+        expected_return_date: new Date(),
+      });
+    }).rejects.toBeInstanceOf(AppError);
+  });
+});
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
