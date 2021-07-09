@@ -5833,6 +5833,85 @@ describe("Create Rental", () => {
 });
 ```
 
+## Aula CXIV
+> Trabalhando com datas com dayjs
+
+Afim de cumprir o requisito do alguel ter uma duração mínima de 24horas, precisamos nos atentar a data no momento do cadastro e a data que ele informa realizar a devolução e assim verificar se se é maior que o tempo mínimo. Para trabalhar com as dastas de um jeito mais ágil, vamos utilizar a biblioteca dayjs, adicionando ela ao projeto com o comando: `yarn add dayjs`.
+
+No useCase, além de importarmos o dayjs vamos importar o utc com `import utc from "dayjs/plugin/utc";` para "padronizar" os horários, não havendo assim erros nos cálculos.
+
+**`CreateRentalUseCase.ts`:**
+
+```ts
+// importando dayjs e utc
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+// usa utc
+dayjs.extend(utc);
+
+interface IRequest {
+  // Request
+}
+class CreateRentalUseCase {
+  constructor(private rentalsRepository: IRentalsRepository) {}
+
+  async execute({
+    car_id,
+    expected_return_date,
+    user_id,
+  }: IRequest): Promise<Rental> {
+    const minimumHour = 24;
+
+    // RESTANTE DAS VALIDAÇÕES
+
+    // O Alguel dever ter duração mínima de 24horas
+    // Formatando o horário eperado
+    const expectedReturnDateFormmat = dayjs(expected_return_date)
+      .utc()
+      .local()
+      .format();
+    // Formatando horário atual
+    const dateNow = dayjs().utc().local().format();
+    // Comparando horrário
+    const compare = dayjs(expectedReturnDateFormmat).diff(dateNow, "hours");
+    if (compare < minimumHour) {
+      throw new AppError("Invalid return time!");
+    }
+    // Se estive tudo certo, cria o aluguel
+    const rental = await this.rentalsRepository.create({
+      user_id,
+      car_id,
+      expected_return_date,
+    });
+    // retorna rental
+    return rental;
+  }
+}
+export { CreateRentalUseCase };
+```
+
+**`CreateRentalUseCase.spec.ts`:**
+```ts
+describe("Create Rental", () => {
+  const dayAdd24Hours = dayjs().add(1, "day").toDate();
+
+  beforeEach(() => {
+    rentalsRepositoryInMemory = new RentalsRepositoryInMemory();
+    createRentalUsecase = new CreateRentalUseCase(rentalsRepositoryInMemory);
+  });
+  // não deve ser capaz de criar um novo aluguel com tempo de devolução inválido
+  it("should not be able to create a new rental with invalid return time", async () => {
+    expect(async () => {
+      await createRentalUsecase.execute({
+        user_id: "341290",
+        car_id: "test",
+        expected_return_date: dayjs().toDate(),
+      });
+    }).rejects.toBeInstanceOf(AppError);
+  });
+});
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
