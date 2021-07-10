@@ -5912,6 +5912,124 @@ describe("Create Rental", () => {
 });
 ```
 
+## Aula CXV
+> Criando provider para data
+
+Afim de otimizar o uso do dayjs, facilitar a manutenção, vamos criar um provider, que assim como o repositório, vmos criar a interface e vamos criar o arquivo de implementação utilizando o dayjs. Na pasta `shared/container`, vamos criar o diretório `providers/`, contendo o `DateProvider/`, onde sera criado o arquivo de inerface, `IDateProvider.ts`, com a seguinte estrutura:
+
+```ts
+interface IDateProvider {
+  compareInHours(start_date: Date, end_date: Date): number;
+  convertToUTC(date: Date): string;
+  dateNow(): Date;
+}
+export { IDateProvider };
+```
+
+Ainda na pasta `DateProvider/`, vamos criar outro diretório chamado `implematations/` e implementar na class `DayjsDateProvider` que vamos criar nesse diretório a interface **`IDateProvider`**.
+
+```ts
+class DayjsDateProvider implements IDateProvider {
+  dateNow(): Date {
+    return dayjs().toDate();
+  }
+  compareInHours(start_date: Date, end_date: Date): number {
+    const end_date_utc = this.convertToUTC(end_date);
+    const start_date_utc = this.convertToUTC(start_date);
+    return dayjs(end_date_utc).diff(start_date_utc, "hours");
+  }
+  convertToUTC(date: Date): string {
+    return dayjs(date).utc().local().format();
+  }
+}
+export { DayjsDateProvider };
+```
+Class implementada, vamos utilizar el agora no nosso use case deixando ele mais organizado e mais simples de entender.
+**`CreaterentalUseCase.ts`:**
+```ts
+// UTILIZANDO O UTC DO DAYJS
+dayjs.extend(utc);
+// INTERFACE DO REQUEST
+interface IRequest {
+  user_id: string;
+  car_id: string;
+  expected_return_date: Date;
+}
+class CreateRentalUseCase {
+  constructor(
+    private rentalsRepository: IRentalsRepository,
+    private dateProvider: IDateProvider
+  ) {}
+
+  async execute({
+    car_id,
+    expected_return_date,
+    user_id,
+  }: IRequest): Promise<Rental> {
+    const minimumHour = 24;
+    // VALIDAÇÃO DO CARRO
+    const carUnavailabel = await this.rentalsRepository.findOpenRentalByCar(
+      car_id
+    );
+    if (carUnavailabel) {
+      throw new AppError("Car is unavailable");
+    }
+    // VALIDAÇÃO DO USUÁRIO
+    const rentalOpenToUser = await this.rentalsRepository.findOpenRentalByUser(
+      user_id
+    );
+    if (rentalOpenToUser) {
+      throw new AppError("There's a rental in progress for user");
+    }
+    // VALIDAÇÃO POR TEMPO MÍNIMO
+    // O alguel dever ter duração mínima de 24horas
+
+    // UTILIZANDO OS MÉTODOS CRIADOS COM O PROVIDER
+    const dateNow = this.dateProvider.dateNow();
+    const compare = this.dateProvider.compareInHours(
+      dateNow,
+      expected_return_date
+    );
+    // VALIDANDO
+    if (compare < minimumHour) {
+      throw new AppError("Invalid return time!");
+    }
+    // SALVANDO RENTAL
+    const rental = await this.rentalsRepository.create({
+      user_id,
+      car_id,
+      expected_return_date,
+    });
+    // RETORNANDO RENTAL
+    return rental;
+  }
+}
+export { CreateRentalUseCase };
+```
+
+**`CreaterentalUseCase.spec.ts`:**
+```ts
+// Iniciando e tipiando variáveis
+let createRentalUsecase: CreateRentalUseCase;
+let rentalsRepositoryInMemory: RentalsRepositoryInMemory;
+let dayjsDateProvider: DayjsDateProvider;
+
+describe("Create Rental", () => {
+  const dayAdd24Hours = dayjs().add(1, "day").toDate();
+
+  beforeEach(() => {
+    rentalsRepositoryInMemory = new RentalsRepositoryInMemory();
+    // Instanciado Provider
+    dayjsDateProvider = new DayjsDateProvider();
+    createRentalUsecase = new CreateRentalUseCase(
+      rentalsRepositoryInMemory,
+      dayjsDateProvider
+    );
+  });
+  // RESTO DO CÓDIGO
+});
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
