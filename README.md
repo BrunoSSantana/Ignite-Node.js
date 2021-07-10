@@ -6030,6 +6030,185 @@ describe("Create Rental", () => {
 });
 ```
 
+## Aula CXVI
+> Criando controller
+
+**Correções**
+
+Migration:
+```ts
+export class CreateRentals1625590443953 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createTable(
+      new Table({
+        name: "rentals",
+        columns: [
+          // PARTE ANTERIOR DO CÓDIO
+          { name: "end_date", type: "timestamp", isNullable: true },
+          { name: "total", type: "numeric", isNullable: true },
+          // RESTO DO CÓDIGO
+        ],
+        foreignKeys: [
+          // MAIS CÓDIO
+        ],
+      })
+    );
+  }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable("rentals");
+  }
+}
+```
+
+Entity:
+```ts
+@Entity("rentals")
+class Rental {
+  @PrimaryColumn()
+  id: string;
+
+  @Column()
+  car_id: string;
+
+  @Column()
+  user_id: string;
+
+  @Column()
+  start_date: Date;
+
+  @Column()
+  end_date: Date;
+
+  @Column()
+  expected_return_date: Date;
+
+  @Column()
+  total: number;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  constructor() {
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+  }
+}
+export { Rental };
+```
+
+**Continuando aplicação...**
+
+Controller:
+```ts
+class CreateRentalController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    const { expected_return_date, car_id } = request.body;
+    const { id } = request.user;
+    const createRentalUseCase = container.resolve(CreateRentalUseCase);
+
+    const rental = await createRentalUseCase.execute({
+      car_id,
+      expected_return_date,
+      user_id: id,
+    });
+    return response.status(201).json(rental);
+  }
+}
+export { CreateRentalController };
+```
+Repository:
+```ts
+class RentalsRepository implements IRentalsRepository {
+  private repository: Repository<Rental>;
+
+  constructor() {
+    this.repository = getRepository(Rental);
+  }
+  async create({
+    car_id,
+    expected_return_date,
+    user_id,
+  }: ICreateRentalDTO): Promise<Rental> {
+    const rental = this.repository.create({
+      car_id,
+      expected_return_date,
+      user_id,
+    });
+    await this.repository.save(rental);
+    return rental;
+  }
+
+  async findOpenRentalByCar(car_id: string): Promise<Rental> {
+    const openByCar = await this.repository.findOne({ car_id });
+    return openByCar;
+  }
+  async findOpenRentalByUser(user_id: string): Promise<Rental> {
+    const openByUser = await this.repository.findOne({ user_id });
+    return openByUser;
+  }
+}
+export { RentalsRepository };
+```
+
+Providers:
+```ts
+container.registerSingleton<IDateProvider>(
+  "DayjsDateProvider",
+  DayjsDateProvider
+);
+```
+Container:
+```ts
+// RESTO DO CÓDIGO
+container.registerSingleton<IRentalsRepository>(
+  "RentalsRepository",
+  RentalsRepository
+);
+```
+UseCase:
+```ts
+@injectable()
+class CreateRentalUseCase {
+  constructor(
+    @inject("RentalsRepository")
+    private rentalsRepository: IRentalsRepository,
+    @inject("DayjsDateProvider")
+    private dateProvider: IDateProvider
+  ) {}
+
+  async execute({
+    car_id,
+    expected_return_date,
+    user_id,
+  }: IRequest): Promise<Rental> {
+    const minimumHour = 24;
+
+  // RESTO DO CÓDIGO
+  }
+}
+export { CreateRentalUseCase };
+```
+
+routes/index:
+```ts
+const rentalsRoutes = Router();
+
+const createRentalController = new CreateRentalController();
+
+rentalsRoutes.post("/", ensureAuthenticated, createRentalController.handle);
+
+export { rentalsRoutes };
+```
+
+routes:
+```ts
+router.use("/rentals", rentalsRoutes);
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
