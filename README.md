@@ -6034,8 +6034,10 @@ describe("Create Rental", () => {
 > Criando controller
 
 **Correções**
+Antes de darmos continuidade, vamos voltar u pouco no prjeto mais uma vez, para rever alguns pontos.
 
-Migration:
+Migration: Ao criarmos um rental, ou seja, um linha na tabela `rentals`, duas colunas serão inicializadas como nulas e será preenchida posteriormente, são elas as colunas de `end_date` e `total`.
+**`CreateRentals`:**
 ```ts
 export class CreateRentals1625590443953 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -6059,8 +6061,10 @@ export class CreateRentals1625590443953 implements MigrationInterface {
   }
 }
 ```
+Entity: Agora vamos preencher rapudidamente as entities com os decorators do typeorm.
 
-Entity:
+**`Rentals`:**
+
 ```ts
 @Entity("rentals")
 class Rental {
@@ -6102,32 +6106,19 @@ export { Rental };
 
 **Continuando aplicação...**
 
-Controller:
-```ts
-class CreateRentalController {
-  async handle(request: Request, response: Response): Promise<Response> {
-    const { expected_return_date, car_id } = request.body;
-    const { id } = request.user;
-    const createRentalUseCase = container.resolve(CreateRentalUseCase);
+Repository: Antes de criarmos o controller, precisamos criar o repository e implmentar os métodos que criamos na interface `IRentalsRepository`, ir no container e apontar ele para o tsrynge asim como também o `DayjsDateProvider`, e adicionar os decorators do tsrynge no useCase.
 
-    const rental = await createRentalUseCase.execute({
-      car_id,
-      expected_return_date,
-      user_id: id,
-    });
-    return response.status(201).json(rental);
-  }
-}
-export { CreateRentalController };
-```
-Repository:
+**`RentalsRepository.ts`:**
+
 ```ts
 class RentalsRepository implements IRentalsRepository {
   private repository: Repository<Rental>;
 
   constructor() {
+    // buscndo o repository que a entidde Rental, faz referência 
     this.repository = getRepository(Rental);
   }
+  // cria rental
   async create({
     car_id,
     expected_return_date,
@@ -6141,11 +6132,12 @@ class RentalsRepository implements IRentalsRepository {
     await this.repository.save(rental);
     return rental;
   }
-
+  // busca rental a partir de id do carro informado
   async findOpenRentalByCar(car_id: string): Promise<Rental> {
     const openByCar = await this.repository.findOne({ car_id });
     return openByCar;
   }
+  // busca rental a partir de id de usuário
   async findOpenRentalByUser(user_id: string): Promise<Rental> {
     const openByUser = await this.repository.findOne({ user_id });
     return openByUser;
@@ -6154,14 +6146,20 @@ class RentalsRepository implements IRentalsRepository {
 export { RentalsRepository };
 ```
 
-Providers:
+Providers: Na pasta `providers/` criada em `shared/container/` vamos adicionar  o arquivo `index.ts` com a seguinte estrutura.
+
+**`providers/index.ts`:**
+
 ```ts
 container.registerSingleton<IDateProvider>(
   "DayjsDateProvider",
   DayjsDateProvider
 );
 ```
-Container:
+Container: Seguindo a mesma estrutura que foi ralizada com os repository anteriores.
+
+**`container/index.ts`:**
+
 ```ts
 // RESTO DO CÓDIGO
 container.registerSingleton<IRentalsRepository>(
@@ -6169,7 +6167,10 @@ container.registerSingleton<IRentalsRepository>(
   RentalsRepository
 );
 ```
-UseCase:
+UseCase: Vamos adcionar o `@injectable()` e `@inject()` como recomendado.
+
+**`CreateRentalUseCase.ts`:**
+
 ```ts
 @injectable()
 class CreateRentalUseCase {
@@ -6192,8 +6193,36 @@ class CreateRentalUseCase {
 }
 export { CreateRentalUseCase };
 ```
+Controller: No Controller,  vamos seguir a estrutura padrão que vemo adotando, lembrando que vamos pegar o id do `request.user` que será passado por meio do middleware de `ensureAuthenticated`.
 
-routes/index:
+**`CreateRentalController.ts`:**
+
+```ts
+class CreateRentalController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    // capturando variáveis do body
+    const { expected_return_date, car_id } = request.body;
+    // capturando variáveis do middleware ensureAuthenticated
+    const { id } = request.user;
+    // "instanciando" useCase
+    const createRentalUseCase = container.resolve(CreateRentalUseCase);
+    // executando useCase
+    const rental = await createRentalUseCase.execute({
+      car_id,
+      expected_return_date,
+      user_id: id,
+    });
+    // retornando status e rental criado em formato Json
+    return response.status(201).json(rental);
+  }
+}
+export { CreateRentalController };
+```
+
+Routes: Na pasta shared/infra/http/routes/ vamos criar o arquivo `rental.routes.ts` com a seguinte estrura, em seguida, vamos chamar no arquivo `index.ts` do diretório routes.
+
+**`rentl.routes.ts`:**
+
 ```ts
 const rentalsRoutes = Router();
 
@@ -6204,11 +6233,12 @@ rentalsRoutes.post("/", ensureAuthenticated, createRentalController.handle);
 export { rentalsRoutes };
 ```
 
+`routes/index.ts`
+
 routes:
 ```ts
 router.use("/rentals", rentalsRoutes);
 ```
-
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
