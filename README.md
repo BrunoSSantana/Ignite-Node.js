@@ -6239,6 +6239,35 @@ routes:
 ```ts
 router.use("/rentals", rentalsRoutes);
 ```
+
+## Aula CXVII
+> Configurando supertest
+
+Aqui vamos começar  a implantar a supertest na nssa aplicação. Para isso precisamos desacoplar o `app` do nosso `server`. Assim, vamos renomear o arquivo `server.ts` para `app.ts` e depois substituir o `listen(...)` pelo `export{ app }`. e criar um arquivo na msm pasta, `shared/infra/http/`, o arquivo `server.ts`, com o seguinte código:
+```ts
+import { app } from "./app";
+
+app.listen(3333, () => console.log("Server is running"));
+```
+Desacoplado nosso app agora pode "interegarir co outras partes da nossa aplicação, no caso, com o supertest que vamos instalar agora.
+instala supertest: `yarn add supertest`
+instala types/supertest: `yarn add @types/supertest -D`
+
+Vamos iniciar implatar o supertest no createCategory, criando o arquivo `CreateCategoryController.spec.ts` onde vamos iniciar com a seguinte estrutura:
+**`CreateCategoryController.spec.ts`:**
+
+```ts
+import request from "supertest";
+
+import { app } from "@shared/infra/http/app";
+
+describe("Create category Controller", () => {
+  it("test", async () => {
+    await request(app).get("/cars/available").expect(200);
+  });
+});
+``` 
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
