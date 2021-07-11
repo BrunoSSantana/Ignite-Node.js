@@ -6266,7 +6266,57 @@ describe("Create category Controller", () => {
     await request(app).get("/cars/available").expect(200);
   });
 });
-``` 
+```
+
+## Aula CXVIII
+> Criando o primeiro teste de integração
+
+Vamos começar nosso teste de integração pelo arquivo `CreateCategoryController.spec.ts`:
+
+```ts
+describe("Create category Controller", () => {
+  it("should be able to create a new category", async () => {
+    const response = await request(app).post("/categories").send({
+      name: "Category Supertest",
+      description: "category Supertest",
+    });
+    expect(response.status).toBe(201);
+  });
+});
+```
+
+Para trabalharmos com testes, é preciso que ele não modifique o banco de dados da nossa aplicação, com isso, vamos criar um banco de dados para os nossos teste e para isso vamos executr o seguinte comando na query do beekeeper:
+```sql
+CREATE DATABASE retals_test;
+```
+Para que nosso test não utilize o banco de dados da nossa aplicação, temos que indicar isso para ele. Então, no arquivo `index.ts` do diretório `shared/infra/typeorm/` vamos fazer a seguinte modificação:
+
+```ts
+export default async (host = "database_ignite"): Promise<Connection> => {
+  const defaultOptions = await getConnectionOptions();
+
+  return createConnection(
+    Object.assign(defaultOptions, {
+      // caso o NODE_ENV seja igual a "test" host recebe "localhost", caso contrário host recebe host
+      host: process.env.NODE_ENV === "test" ? "localhost" : host,
+      // caso o NODE_ENV seja igual a "test", database receberá rentals_test, se não, utilize o padrão
+      database:
+        process.env.NODE_ENV === "test"
+          ? "rentals_test"
+          : defaultOptions.database,
+    })
+  );
+};
+```
+
+E como vamos passar essa variável e ambiente? Existem várias formas, a que vamos utilizar no momento é pelo script do test no package.json, onde:
+```json
+{
+"scripts": {
+  "test": "NODE_ENV=test jest"
+}
+}
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
