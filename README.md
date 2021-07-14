@@ -6318,6 +6318,67 @@ E como vamos passar essa variável e ambiente? Existem várias formas, a que vam
 }
 ```
 
+## Aula CXIX
+> Continuando teste de integração
+
+```ts
+import { hash } from "bcrypt";
+import request from "supertest";
+import { Connection } from "typeorm";
+import { v4 as uuidv4 } from "uuid";
+
+import { app } from "@shared/infra/http/app";
+import createConnection from "@shared/infra/typeorm";
+
+let connection: Connection;
+
+describe("Create category Controller", () => {
+  beforeAll(async () => {
+    // Antes de tudo vamos criar uma conexão
+    connection = await createConnection();
+    // esta conexão irá rodar nossas migrations
+    await connection.runMigrations();
+    // gerando um uuid
+    const id = uuidv4();
+    // gerando o hash da senha "admin"
+    const password = await hash("admin", 8);
+    // criando query q adciona um admin
+    await connection.query(
+      `INSERT INTO USERS(id, name, email, password, "isAdmin", created_at, driver_license )
+      values('${id}', 'admin', 'admin@rentalx.com.br', '${password}', true, 'now()', '123456')`
+    );
+  });
+  // Ao final de todo teste será apagado o banco de dados e a conexão será fechada
+  afterAll(async () => {
+    await connection.dropDatabase();
+    await connection.close();
+  });
+
+  it("should be able to create a new category", async () => {
+    // cria sessão (token)
+    const responseToken = await request(app).post("/sessions").send({
+      email: "admin@rentalx.com.br",
+      password: "admin",
+    });
+    // Pegando o token criado
+    const { token } = responseToken.body;
+    // criando a nova categoria uzando o token criado
+    const response = await request(app)
+      .post("/categories")
+      .send({
+        name: "Category Supertest",
+        description: "category Supertest",
+      })
+      .set({
+        Authorization: `Bearer ${token}`,
+      });
+    // Espera-se receber o status code 201 da requisição
+    expect(response.status).toBe(201);
+  });
+});
+```
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
