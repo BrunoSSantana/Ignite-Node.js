@@ -6312,9 +6312,9 @@ export default async (host = "database_ignite"): Promise<Connection> => {
 E como vamos passar essa variável e ambiente? Existem várias formas, a que vamos utilizar no momento é pelo script do test no package.json, onde:
 ```json
 {
-"scripts": {
-  "test": "NODE_ENV=test jest"
-}
+  "scripts": {
+    "test": "NODE_ENV=test jest"
+  }
 }
 ```
 
