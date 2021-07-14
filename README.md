@@ -6378,6 +6378,97 @@ describe("Create category Controller", () => {
 });
 ```
 
+## Aula CXX
+> Criando teste de listagem de categorias
+
+COntinuando os testes de criação de categorias, vamos criar um test que diga que não é possível criar uma categoria com um nome já exitente para isso vamos adicionar o seguinte código ao arquivo de **`CreateCategoryController.spec.ts`**.
+```ts
+describe("Create category Controller", () => {
+  // Resto do código
+  // Com o beforeAll e o afterAll, os nosos dados criados só serão apagados ao final de todo processo, assim vamos tentar criar outra categoria e esperar um erro 400
+
+  it("should not be able to create a new category with name exists", async () => {
+    // cria sessão (token)
+    const responseToken = await request(app).post("/sessions").send({
+      email: "admin@rentalx.com.br",
+      password: "admin",
+    });
+    // Pegando o token criado
+    const { token } = responseToken.body;
+    // criando a nova categoria uzando o token criado
+    const response = await request(app)
+      .post("/categories")
+      .send({
+        name: "Category Supertest",
+        description: "category Supertest",
+      })
+      .set({
+        Authorization: `Bearer ${token}`,
+      });
+    // espera que a categoria não possa sercriada
+    expect(response.status).toBe(400);
+  });
+});
+```
+
+Antes de finalizar esse capítulo vamos ver o teste para listar nossas categorias. Etnão, no useCase `listCategories`, vamos criar o arquivo `ListCategoriesController.spec.ts` com a seguinte estrutura:
+
+```ts
+let connection: Connection;
+
+describe("List category Controller", () => {
+  beforeAll(async () => {
+    // Antes de tudo vamos criar uma conexão
+    connection = await createConnection();
+    // esta conexão irá rodar nossas migrations
+    await connection.runMigrations();
+    // gerando um uuid
+    const id = uuidv4();
+    // gerando o hash da senha "admin"
+    const password = await hash("admin", 8);
+    // criando query q adciona um admin
+    await connection.query(
+      `INSERT INTO USERS(id, name, email, password, "isAdmin", created_at, driver_license )
+      values('${id}', 'admin', 'admin@rentalx.com.br', '${password}', true, 'now()', '123456')`
+    );
+  });
+  // Ao final de todo teste será apagado o banco de dados e a conexão será fechada
+  afterAll(async () => {
+    await connection.dropDatabase();
+    await connection.close();
+  });
+
+  it("should be able to list all categories", async () => {
+    // cria token
+    const responseToken = await request(app).post("/sessions").send({
+      email: "admin@rentalx.com.br",
+      password: "admin",
+    });
+    // Pega token
+    const { token } = responseToken.body;
+    // Cria Categoria
+    await request(app)
+      .post("/categories")
+      .send({
+        name: "Category Supertest",
+        description: "Category Supertest",
+      })
+      .set({
+        Authorization: `Bearer ${token}`,
+      });
+    // Lista categorias
+    const response = await request(app).get("/categories");
+    // Espera status 200
+    expect(response.status).toBe(200);
+    // espera ter uma lista
+    expect(response.body.length).toBe(1);
+    // Espera ter a propriedade "id" no primeiro item dentro do body
+    expect(response.body[0]).toHaveProperty("id");
+    // Espera o nome da categoria "Category Supertest"
+    expect(response.body[0].name).toEqual("Category Supertest");
+  });
+});
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
