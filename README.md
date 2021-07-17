@@ -6478,6 +6478,131 @@ describe("List category Controller", () => {
 - Envio de email com template customizado
 - Correção de testes
 
+## Aula CXXII
+> Migration de devolução de carro
+
+Vamos agora continuar com a parte do aluguel, no que tange a parte de devolução do aluguel, lembrando que:
+
+### Devolução do carro
+
+**RF**
+
+  Deve ser possível realizar a devolução de um carro
+
+**RN**
+
+  Se o carro for devolvido com menos de 24 horas, deverá - ser cobrado diária completa.
+  Ao realizar a devolução, o carro deverá ser liberado para - outro aluguel.
+  Ao realizar a devolução, o usuário deverá ser liberado - para outro aluguel.
+  Ao realizar a devolução, deverá ser calculado o total do - aluguel.
+  Caso o horário de devolução seja superior ao horário - previsto de entrega, deverá ser cobrado multa - proporcional aos dias de atraso.
+  Caso haja multa, deverá ser somado ao total do aluguel.
+  O usuário deve estar logado na aplicação
+
+Obersarvamos agora uma pequena falha, na criação do aluguel onde deve ser alterado o estado de carro indisponível assim que criado um aluguel com determinado veículo, coisa que no momento não ocorre, para corrigir isso, vamos pontuar o que iremos fazer:
+
+- Criação de método para fazer update do estado de `available` do carro;
+  - Apontar na interface `ICarsRepository`.
+  - Criar o método no `CarsRepository`
+  - Criar o método no `CarsRepositoryInMemory`
+- Usar método no `CreateRentalUseCase`
+- Usar método no `CreateRentalUseCase.spec`
+
+**`ICarsRepository`:**
+
+```ts
+interface ICarsRepository {
+  // Resto do código
+  updateAvailable(id: string, available: boolean): Promise<void>;
+}
+```
+
+**`CarsRepository`:**
+
+```ts
+class CarsRepository implements ICarsRepository {
+  private repository: Repository<Car>;
+
+  constructor() {
+    this.repository = getRepository(Car);
+  }
+
+  // Resto do código
+
+  async updateAvailable(id: string, available: boolean): Promise<void> {
+    await this.repository
+      .createQueryBuilder()
+      .update()
+      .set({ available })
+      .where("id = :id")
+      .setParameters({ id })
+      .execute();
+  }
+}
+```
+
+**`CarsRepositoryInMemory`:**
+
+```ts
+class CarsRepositoryInMemory implements ICarsRepository {
+  async updateAvailable(id: string, available: boolean): Promise<void> {
+    const findIndex = this.cars.findIndex((car) => car.id === id);
+    this.cars[findIndex].available = available;
+  }
+}
+```
+
+**`CreateRentalUseCase`:**
+
+```ts
+@injectable()
+class CreateRentalUseCase {
+  constructor(
+    // @injections...
+  ) {}
+
+  async execute({
+    car_id,
+    expected_return_date,
+    user_id,
+  }: IRequest): Promise<Rental> {
+    // Resto do código
+
+    // passando o id e o parâmetro "false"
+    await this.carsRepository.updateAvailable(car_id, false);
+    return rental;
+  }
+}
+```
+
+**`CreateRentalUseCase.spec`:**
+
+```ts
+let createRentalUsecase: CreateRentalUseCase;
+let rentalsRepositoryInMemory: RentalsRepositoryInMemory;
+// chamando o repositório de carros para testes
+let carsRepositoryInMemory: CarsRepositoryInMemory;
+let dayjsDateProvider: DayjsDateProvider;
+
+describe("Create Rental", () => {
+  const dayAdd48Hours = dayjs().add(2, "day").toDate();
+
+  beforeEach(() => {
+    rentalsRepositoryInMemory = new RentalsRepositoryInMemory();
+    // instanciando o repositório de carros
+    carsRepositoryInMemory = new CarsRepositoryInMemory();
+    dayjsDateProvider = new DayjsDateProvider();
+    createRentalUsecase = new CreateRentalUseCase(
+      rentalsRepositoryInMemory,
+      dayjsDateProvider,
+      // passando o repositório de carros como paramêtro para o useCase
+      carsRepositoryInMemory
+    );
+  });
+  // Resto do código
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
