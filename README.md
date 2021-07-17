@@ -6470,6 +6470,14 @@ describe("List category Controller", () => {
 });
 ```
 
+## Aula CXXI
+> Introdução ao cap V
+
+- Implementação de funcionalidades
+- Refresh Token
+- Envio de email com template customizado
+- Correção de testes
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
