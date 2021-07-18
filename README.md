@@ -6774,6 +6774,73 @@ class DayjsDateProvider implements IDateProvider {
 }
 ```
 
+
+## Aula CXXIV
+> Controller de devolução de carro
+
+Continuando a nossa aplicação vamos passar para o controller onde vamos pegar as request e executar o use case.
+
+**`DevolutionRentalController.ts`:**
+
+```ts
+class DevolutionRentalController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    const devolutionRentalUseCase = container.resolve(DevolutionRentalUseCase);
+    // vamos pegar o id do user que vem do middleware e passar como user_id
+    const { id: user_id } = request.user;
+    // pega o id da url
+    const { id } = request.params;
+    // fazer a devolução e esperar o retorno do rental
+    const rental = await devolutionRentalUseCase.execute({
+      id,
+      user_id,
+    });
+    // passar o rental como json e status code, 200
+    return response.status(200).json(rental);
+  }
+}
+```
+
+**`rental.routes.ts`:**
+
+```ts
+// Resto do código
+const createRentalController = new CreateRentalController();
+const devolutionRentalController = new DevolutionRentalController();
+
+rentalsRoutes.post("/", ensureAuthenticated, createRentalController.handle);
+rentalsRoutes.post(
+  // caminho
+  "/devolution/:id",
+  // autentificação do usuário
+  ensureAuthenticated,
+  // passando o controller
+  devolutionRentalController.handle
+);
+```
+
+`RentalsRepository.ts`
+
+```ts
+class RentalsRepository implements IRentalsRepository {
+  // Resto do código
+  async findOpenRentalByCar(car_id: string): Promise<Rental> {
+    const openByCar = await this.repository.findOne({
+      // pega esse rental onde o car_id for esse que te passei e o end_date for nulo
+      where: { car_id, end_date: null },
+    });
+    return openByCar;
+  }
+  async findOpenRentalByUser(user_id: string): Promise<Rental> {
+    const openByUser = await this.repository.findOne({
+      // pega esse rental onde o user_id for esse que te passei e o end_date for nulo
+      where: { user_id, end_date: null },
+    });
+    return openByUser;
+  }
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
