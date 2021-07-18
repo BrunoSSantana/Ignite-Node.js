@@ -6841,6 +6841,89 @@ class RentalsRepository implements IRentalsRepository {
 }
 ```
 
+## Aula CXXV
+> Listagem de aluguéis do usuário
+
+Agora vamos criar a funcionalidade de listar aluguéis por usuários, Nessa intenção, vamos criar um diretório em `useCase/` do módulo `rentals`, chamado `listRentalsByUser` com as classes `ListRentalsByUserUseCase` e `ListRentalsByUserController`.
+
+**`ListRentalsByUserUseCase.ts`:**
+
+```ts
+@injectable()
+class ListRentalsByUserUseCase {
+  constructor(
+    // pegando o repositório de rentals
+    @inject("RentalsRepository")
+    private rentalsRepository: IRentalsRepository
+  ) {}
+  async execute(user_id: string): Promise<Rental[]> {
+    // vamos futuramente criar o método findByUser no repositório de rentals
+    // esse método vai buscar os rentals com o usuário que foi passado
+    const rentalsByUser = await this.rentalsRepository.findByUser(user_id);
+    // retorna os rentals buscados pelo método findByUser
+    return rentalsByUser;
+  }
+}
+```
+Agora vamos criar o método que ficou faltando ser criado.
+
+**`IRentalsRepository.ts`:**
+
+```ts
+interface IRentalsRepository {
+  // Resto do código
+  findByUser(user_id: string): Promise<Rental[]>;
+}
+```
+
+**`RentalsRepository.ts`:**
+
+```ts
+class RentalsRepository implements IRentalsRepository {
+  // Resto do código
+  async findByUser(user_id: string): Promise<Rental[]> {
+    const rentals = this.repository.find({ user_id });
+
+    return rentals;
+  }
+}
+```
+Repositório e UseCase finalizados vamos agora para o controller.
+
+**`ListRentalsByUserController.ts`:**
+
+```ts
+class ListRentalsByUserController {
+  async handel(request: Request, response: Response): Promise<Response> {
+    // pegando o id do middleware
+    const { id } = request.user;
+    // instanciando o useCase
+    const listRentalsByUserUseCase = container.resolve(
+      ListRentalsByUserUseCase
+    );
+    // Executando o useCase
+    const rentals = await listRentalsByUserUseCase.execute(id);
+    // retornando os rentals
+    return response.json(rentals);
+  }
+}
+```
+
+E para finalizar vamos adicionar o controller ao `rental.routes.ts`
+
+**`rental.routes.ts`:**
+
+```ts
+// Resto do código
+const listRentalsByUserController = new ListRentalsByUserController();
+// passando alé do controller o middleware de autentificaçãode usuário
+rentalsRoutes.get(
+  "/user",
+  ensureAuthenticated,
+  listRentalsByUserController.handel
+);
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
