@@ -6603,6 +6603,177 @@ describe("Create Rental", () => {
 }
 ```
 
+## Aula CXXIII
+> Caso de Uso de devolução de carro
+
+Nesse momento vamoscriar o caso de uso de devolução de carros. Para isso em `useCase/` do módulo `rentals`, vamos criar o diretório `devolutionRental/` com os arquivos `DevolutionRentalUseCase.ts` e `DevolutionRentalController.ts`.
+
+**`DevolutionRentalUseCase.ts`:**
+```ts
+interface IRequest {
+  id: string;
+  user_id: string;
+}
+
+@injectable()
+class DevolutionRentalUseCase {
+  constructor(
+    @inject("RentalsRepository")
+    // Instaciar repositório de rentals
+    private rentalsRepository: IRentalsRepository,
+    // Instaciar provider de Date
+    @inject("DayjsDateProvider")
+    private dateProvider: IDateProvider,
+    // Instaciar repositório de cars
+    @inject("CarsRepository")
+    private carsRepository: ICarsRepository
+  ) {}
+
+  async execute({ user_id, id }: IRequest): Promise<Rental> {
+    // diária mínimade 1 dia
+    const minimum_daily = 1;
+    // Vamos criar um método para buscar um rental pelo seu id
+    // rental que corresponde a este id
+    const rental = await this.rentalsRepository.findById(id);
+    // car que corresponde ao id contido na tabela de cars
+    const car = await this.carsRepository.findById(rental.car_id);
+
+    // se não existir rental com este id, retorna um erro
+    if (!rental) {
+      throw new AppError("Rental does not exists!");
+    }
+
+    // Pega a data no presente momento
+    const dateNow = this.dateProvider.dateNow();
+    // diferença em dias do início do aluguel até o presente momento, ou seja o número de diárias
+    let daily = this.dateProvider.compareInDays(
+      rental.start_date,
+      this.dateProvider.dateNow()
+    );
+    // se a diária for menor ou igual a 0, set o daily em no mínimo de diárias permitida, que é de 1 dia
+    if (daily <= 0) {
+      daily = minimum_daily;
+    }
+    // número de dias que atrasou a entrega
+    // método que será criado no DayjsdateProvider
+    const delay = this.dateProvider.compareInDays(
+      dateNow,
+      rental.expected_return_date
+    );
+    // total a ser pago
+    let total = 0;
+    // se atrasou a entregar o carro, vamos calcular a multa
+    if (delay > 0) {
+      // dias em atraso * valor da multa por dia
+      const calculate_fine = delay * car.fine_amount;
+      // gauda em total
+      total = calculate_fine;
+    }
+    // somando o valor da multa com a diária do carro para os retardatários
+    // ou simplesmete caclculando o valor da diária, caso o usuário tenha entregue em dia
+    total += daily * car.daily_rate;
+    // passando o dia de entrega desse aluguel para
+    rental.end_date = this.dateProvider.dateNow();
+    // passando o valor total do aluguel paa a tabela
+    rental.total = total;
+    // salvando as informações que passamos
+    // aqui vamo fazer um adendo pois atualemnte o nosso rentalsRepository não consegue receber alguns parâmetros que passamos aqui, para isso vamos ter que modificar o ICreateRentalDTO e o Rentalsrepository
+    await this.rentalsRepository.create(rental);
+    // atualizando o carro como available
+    await this.carsRepository.updateAvailable(car.id, true);
+    // retonrando o rental
+    return rental;
+  }
+}
+```
+
+**`ICreateRentalDTO`:**
+
+```ts
+interface ICreateRentalDTO {
+  user_id: string;
+  car_id: string;
+  expected_return_date: Date;
+  // ao criar o rental não passamos esses parâmetros pois eles não existem
+  // ao atualizarmos utilizando o método create(), presicamos tornar esses paramêtros como opicionais para serem usados tanto na criação quanto no update
+  id?: string;
+  end_date?: Date;
+  total?: number;
+}
+```
+
+**`IRentalsrepository`:**
+
+```ts
+interface IRentalsRepository {
+  // Resto do código
+  findById(id: string): Promise<Rental>;
+}
+
+```
+
+**`Rentalsrepository`:**
+
+```ts
+class RentalsRepository implements IRentalsRepository {
+  private repository: Repository<Rental>;
+
+  constructor() {
+    this.repository = getRepository(Rental);
+  }
+  // passando os parâmetros
+  async create({
+    car_id,
+    expected_return_date,
+    user_id,
+    id,
+    end_date,
+    total,
+  }: ICreateRentalDTO): Promise<Rental> {
+    const rental = this.repository.create({
+      // recebendo os parâmetros caso existam
+      car_id,
+      expected_return_date,
+      user_id,
+      id,
+      end_date,
+      total,
+    });
+    await this.repository.save(rental);
+    return rental;
+  }
+  // Resto do código
+  async findById(id: string): Promise<Rental> {
+    const rental = this.repository.findOne(id);
+    return rental;
+  }
+}
+```
+
+`IDateProvider`
+
+```ts
+interface IDateProvider {
+  // Resto do código
+  compareInDays(start_date: Date, end_date: Date): number;
+}
+```
+
+`DayjsDateProvider`
+
+```ts
+class DayjsDateProvider implements IDateProvider {
+  // Resto do Código
+  compareInDays(start_date: Date, end_date: Date): number {
+    // padroniza o formato das datas
+    const end_date_utc = this.convertToUTC(end_date);
+    const start_date_utc = this.convertToUTC(start_date);
+    // retorna a diferença em dias entre a data finale a data inicial
+    return dayjs(end_date_utc).diff(start_date_utc, "days");
+  }
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
