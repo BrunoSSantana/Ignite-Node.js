@@ -6924,6 +6924,43 @@ rentalsRoutes.get(
 );
 ```
 
+
+## Aula CXXVI
+> Refatorando a listagem de aluguel do usuário
+
+Na listagem de aluguel de imóveis é apresentado o id do carro, mas caso fosse necessário mais que o id o nome e todo as outras informações, ou então para evitar que o usuário faça uma nova requesição, o que podemos fazer? podemos fazer um relacionamento onde vamos estar buscando além do id do carro, todo o objeto. Para isso vamos realizar alterações em nossa entidade de `Rentals` e no `RentalsRepository`.
+
+`Rentals.ts`
+
+```ts
+@Entity("rentals")
+class Rental {
+  @PrimaryColumn()
+  id: string;
+  // Criando o relacionamento
+  @ManyToOne(() => Car)
+  @JoinColumn({ name: "car_id" })
+  car: Car;
+  // Resto do repositório
+}
+```
+
+`RentalsRepository.ts`
+
+```ts
+class RentalsRepository implements IRentalsRepository {
+  // Resto do repositório
+  async findByUser(user_id: string): Promise<Rental[]> {
+    const rentals = this.repository.find({
+      where: { user_id },
+      // buscando a tabela que possui o relacionamento
+      relations: ["car"],
+    });
+    return rentals;
+  }
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
