@@ -7152,6 +7152,68 @@ Para uma documentação em produção, precisa-se que ela esteja toda mapeada, p
 }
 ```
 
+## Aula CXXIX
+> Documentação para upload de imagens do carro
+
+O que iremos aprender agora:
+
+- Receber parâmetro via rota
+- Receber multiplos arquivos dentro do swagger
+
+```json
+{
+  "paths": {
+    // enviando parâmetro "id" pela url
+    "/cars/images/{id}": {
+      "post": {
+        "tags": ["Cars"],
+        "sumary": "Upload Images",
+        "description": "Upload images",
+        "security": [
+          { "bearerAuth": [] }
+        ],
+        // recebendo o prâmetro id da url
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Car id",
+            "reqired": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "images": {
+                    // habilita mais de um arquivo
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
