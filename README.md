@@ -6961,6 +6961,99 @@ class RentalsRepository implements IRentalsRepository {
 }
 ```
 
+
+## Aula CXXVII
+> Criando documentação com autenticação em categoria
+
+Aqui vamos especificar quais são as rotas que precisam de autenticação e coo a rota esperar que seja autenticada.
+
+1 - Definir a forma de autenticação
+
+```json
+{
+  "openapi": "3.0.0",
+  "info": {
+    // demais informações
+  },
+  "paths": {
+    // demais informações
+  },
+  "definitions": {
+    // demais informações
+  },
+  // define a forma de autenticação
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
+```
+
+2 - Inserir a autenticação na rota
+
+```json
+{
+  "paths":{
+    "/categories": {
+      "post": {
+        "tags": ["Category"],
+        "summary": "Create a category",
+        "description": "Create a new category",
+        "security": [
+          { "bearerAuth": [] }
+        ],
+      }
+    }
+  }
+}
+```
+
+3 - Criar rota de criação de session (token)
+
+```json
+{
+  "paths":{
+    "/sessions": {
+      "post":{
+        "tags":["Session"],
+        "summary": "Authentication user",
+        "description": "Authentication user",
+        "requestBody":{
+          "content":{
+            "application/json": {
+              "schema":{
+                "type":"object",
+                "properties":{
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type":"string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucess"
+          },
+          "400": {
+            "description": "Email or password incorrect!"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
