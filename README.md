@@ -7261,6 +7261,74 @@ class RentalsRepositoryInMemory implements IRentalsRepository {
     ).rejects.toEqual(new AppError("Car already exists!"));
     ```
 
+## Aula CXXXI
+> Refresh Token
+
+para que não seja necessário que um usuário esteja se autenticando e constantemente e e torne essa auteticação de forma mais automática, vamos trabalhar a partir de agora com o conceito de refresh token,
+
+> "Um refresh token é um tipo especial de token usado para obter um token de acesso renovado. Você pode solicitar novos tokens de acesso até que o token de atualização esteja no DenyList. Os aplicativos devem armazenar tokens de atualização com segurança porque eles permitem essencialmente que um usuário permaneça autenticado para sempre."
+
+Vamos utilizar uma tabela para armazenar os tokens dos usuário e para isso vamos criar e rodar nossa migration.
+
+```sh
+yarn typeorm migration:create -n CreateUsersToken 
+```
+
+```ts
+export class CreateUsersToken1626716982571 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createTable(
+      new Table({
+        name: "users_tokens",
+        columns: [
+          {
+            name: "id",
+            type: "uuid",
+            isPrimary: true,
+          },
+          {
+            name: "refres_token",
+            type: "varchar",
+          },
+          {
+            name: "user_id",
+            type: "uuid",
+          },
+          {
+            name: "expires_date",
+            type: "timestamp",
+          },
+          {
+            name: "created_at",
+            type: "timestamp",
+            default: "now()",
+          },
+        ],
+        foreignKeys: [
+          {
+            name: "FKUserToken",
+            referencedTableName: "users",
+            referencedColumnNames: ["id"],
+            columnNames: ["user_id"],
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE",
+          },
+        ],
+      })
+    );
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable("users_tokens");
+  }
+}
+```
+E para  finalizar:
+
+```sh
+yarn typeorm migration:run
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
