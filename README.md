@@ -7054,6 +7054,104 @@ Aqui vamos especificar quais são as rotas que precisam de autenticação e coo 
 }
 ```
 
+
+## Aula CXXVIII
+> Replicando autenticação para documentação
+
+dando continuidade a nossa documentação, observamos que as rotas de `/categories/import` e o `specifications` dependem de autenticação e não consta isso na documentação. Então vamos agora corrigir isso. adicionando a parte de `"security":[]`
+
+```json
+{
+  "paths":{
+    "/categories/import": {
+      "post": {
+        "tags": ["Category"],
+        "summary": "Upload a new category",
+        "description": "Upload a new category",
+        "security": [
+          { "bearerAuth": [] }
+        ],
+      }
+    },
+    "/specifications": {
+      "post": {
+        "tags": ["Specifications"],
+        "summary":"Create a specification",
+        "description": "Create a new specification",
+        "security": [
+          { "bearerAuth": [] }
+        ],
+      }
+    }
+  }
+}
+```
+
+Para uma documentação em produção, precisa-se que ela esteja toda mapeada, para efeito de prática, iremos adicionar agora outras rotas que criamos em nossa aplicação.
+
+```json
+{
+  "paths": {
+    "/cars": {
+      "post": {
+        "tags": ["Cars"],
+        "summary": "Create a new car",
+        "description": "Create a new car",
+        "security": [
+          { "bearerAuth": [] }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                // dentro de definitions
+                "$ref": "#/definitions/Car"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Car already exists!"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Car": {
+      "type":"object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type":"string"
+        },
+        "daily_rate": {
+          "type": "number"
+        },
+        "license_plate": {
+          "type": "string"
+        },
+        "fine_amount": {
+          "type": "number"
+        },
+        "brand": {
+          "type": "string"
+        },
+        "category_id": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
