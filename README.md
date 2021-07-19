@@ -7329,6 +7329,100 @@ E para  finalizar:
 yarn typeorm migration:run
 ```
 
+## Aula CXXXII
+> Repositório de Refresh token
+
+Com a migration executada vamos agora criar nossa Entity e iniciar nosso repositório. Então, no módulo `accounts` vamos criar a entidade de `UserTokens`
+
+**`UserTokens.ts`:**
+
+```ts
+@Entity()
+class UserTokens {
+  @PrimaryColumn()
+  id: string;
+
+  @Column()
+  refresh_token: string;
+
+  @Column()
+  user_id: string;
+
+  // chamando o a tabela na qual faz referência
+  @ManyToOne(() => User)
+  @JoinColumn({ name: "user_id" })
+  user: User;
+
+  @Column()
+  expires_date: Date;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  constructor() {
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+  }
+}
+```
+
+Com a entity criada, vamos ao nosso repositório, antes vamos criar nossa interface, no diretório repositories, vamos criar o arquivo `IUsersTokensRepository.ts`.
+
+**`IUsersTokensRepository.ts`:**
+
+```ts
+interface IUsersTokensRepository {
+  create({
+    expires_date,
+    refresh_token,
+    user_id,
+  }: ICreateUserTokenDTO): Promise<UserTokens>;
+}
+export { IUsersTokensRepository };
+```
+
+Com a interface criada podemos implementar nosso repositório. Agora em `infra/typeorm/repositories/` vamos implementar no arquivo `UsersTokensRepository.ts`.
+
+**`UsersTokensRepository.ts`:**
+
+```ts
+class UsersTokensRepository implements IUsersTokensRepository {
+  private repository: Repository<UserTokens>;
+
+  constructor() {
+    this.repository = getRepository(UserTokens);
+  }
+
+  async create({
+    expires_date,
+    refresh_token,
+    user_id,
+  }: ICreateUserTokenDTO): Promise<UserTokens> {
+    const UserToken = this.repository.create({
+      refresh_token,
+      user_id,
+      expires_date,
+    });
+
+    await this.repository.save(UserToken);
+
+    return UserToken;
+  }
+}
+```
+
+E agora vamos finalizar criando DTO que utilizamos no `UsersTokensRepository.ts`. No diretório `dto/` vamos criar a classe `ICreateUserTokenDTO`.
+**`ICreateUserTokenDTO.ts`:**
+
+```ts
+interface ICreateUserTokenDTO {
+  user_id: string;
+  expires_date: Date;
+  refresh_token: string;
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
