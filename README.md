@@ -7214,6 +7214,53 @@ O que iremos aprender agora:
 }
 ```
 
+
+## Aula CXXX
+> Correção dos testes
+
+Nessa aula acabei vendo que alguns testes não estavam rodando bem, não sei se por conta do computador lento ou com conta do códig msm, apenas passarei de forma resumida.
+
+1 - Implementação no RentlasRepositoryInMemory;
+```ts
+class RentalsRepositoryInMemory implements IRentalsRepository {
+  // Resto do código
+  async findById(id: string): Promise<Rental> {
+    return this.rentals.find((rental) => rental.id === id);
+  }
+  async findByUser(user_id: string): Promise<Rental[]> {
+    return this.rentals.filter((rental) => rental.user_id === user_id);
+  }
+}
+```
+2 - No CreateRentalUseCase.spec, no teste `"should be able to create a new rental"`, vamos criar um carro para daí então criarmos um aluguel de carros;
+
+3 - Setar o jest para rodar os testes separadamente e verificar se existem testes em aberto;
+```json
+{
+  "scripts": {
+    "test": "NODE_ENV=test jest --runInBand --detectOpenHandles",
+  }
+}
+```
+
+3 - Alterar o `toBeInstanceOf()`, 
+  - deixar no expect apenas a operação que estamos esperando;
+  - trocar o `toBeInstanceOf()` por `toEqual(new AppError("mensagem_a_ser_passada"))`
+  - Exemplo: 
+  ```ts
+      await expect(
+        createCarUseCase.execute({
+        name: "Car2",
+        brand: "Brand",
+        category_id: "category",
+        daily_rate: 100,
+        description: "Description Car",
+        fine_amount: 60,
+        license_plate: "ABC-1234",
+      })
+    ).rejects.toEqual(new AppError("Car already exists!"));
+    ```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
