@@ -7423,6 +7423,164 @@ interface ICreateUserTokenDTO {
 }
 ```
 
+## Aula CXXXIII
+> Refatorando Autenticação do usuário
+
+O que iremos fazer agora é implementar o nosso `UsersTokensRepository` na nossa autenticação. para isso vamos refatorar o seguinte arquivo:
+
+**`AuthenticateUserUseCase`:**
+
+```ts
+interface IRequest {
+  email: string;
+  password: string;
+}
+
+interface IResponse {
+  user: {
+    name: string;
+    email: string;
+  };
+  token: string;
+  refresh_token: string;
+}
+
+@injectable()
+class AuthenticateUserUseCase {
+  constructor(
+    @inject("UsersRepository")
+    private usersRepository: IUsersRepository,
+    // chamando o repositório de users_tokens
+    @inject("UsersTokensRepository")
+    private usersTokensRepository: IUsersTokensRepository,
+    // chamando o privider de manipulação de tempo
+    @inject("DayjsDateProvider")
+    private dateProvider: DayjsDateProvider
+  ) {}
+
+  async execute({ email, password }: IRequest): Promise<IResponse> {
+    const user = await this.usersRepository.findByEmail(email);
+    // desestruturando variáveis que usamos para autenticação 
+    // não é melhor forma devido a riscos a segurança da aplicação, nesses casos recomenda-se variáveis de ambiente
+    const {
+      expires_in_token,
+      secret_refresh_token,
+      secret_token,
+      expires_in_refresh_token,
+      expires_refresh_token_days,
+    } = auth;
+
+    if (!user) {
+      throw new AppError("Email or password incorrect!");
+    }
+    const passwordMatch = await compare(password, user.password);
+
+    if (!passwordMatch) {
+      throw new AppError("Email or password incorrect!");
+    }
+    const token = sign({}, secret_token, {
+      subject: user.id,
+      expiresIn: expires_in_token,
+    });
+    // criando refresh_token
+    const refresh_token = sign({ email }, secret_refresh_token, {
+      subject: user.id,
+      expiresIn: expires_in_refresh_token,
+    });
+    // criando validade para o refreshtoken
+    const refresh_token_expires_date = this.dateProvider.addDays(
+      expires_refresh_token_days
+    );
+    // salvando refresh_token em nosso banco de dados
+    await this.usersTokensRepository.create({
+      user_id: user.id,
+      expires_date: refresh_token_expires_date,
+      refresh_token,
+    });
+    // retorno do usuário
+    const tokenReturn: IResponse = {
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+      },
+      // adicionando ao retorno, o refresh_token
+      refresh_token,
+    };
+    return tokenReturn;
+  }
+}
+```
+
+Como visto, foi criando um arquivo .ts para armazenar alguns dados senssíveis, coisa que não é o recomendável a fazer, em casos assim são usadas variáveis de ambiente. sabendo disso, vamos ignorar por hora e vamos criar na nossa pasta `config/` um arquivo chamado `auth.ts` com o seguinte código:
+
+**`auth.ts`:**
+
+```ts
+export default {
+  secret_token: "7f0a80fe059648190ad441eff2bf0dae",
+  secret_refresh_token: "221267d9ce40254f74d16a5d14c27fed",
+  expires_in_token: "15m",
+  expires_in_refresh_token: "30d",
+  expires_refresh_token_days: 30,
+};
+```
+
+Além do `auth.ts` que estamos usando no `AuthenticateUserUseCase` faltamos criar o método `addDays()` no dateProvider para adicionar dias ao `refresh_token.expires_date`. Então vamos fazer isso agora, começando pela interface `IDateProvider`.
+
+**`IDateProvider`:**
+
+```ts
+interface IDateProvider {
+  // Restante do código
+  // obersavos que o método retornará o valor em número de dias
+  addDays(days: number): Date;
+}
+```
+
+Agora vamos para implementação do método `addDays()` no `DayjsDateProvider`.
+
+**`DayjsDateProvider`:**
+
+```ts
+class DayjsDateProvider implements IDateProvider {
+  dateNow(): Date {
+    return dayjs().toDate();
+  }
+  compareInHours(start_date: Date, end_date: Date): number {
+    const end_date_utc = this.convertToUTC(end_date);
+    const start_date_utc = this.convertToUTC(start_date);
+
+    return dayjs(end_date_utc).diff(start_date_utc, "hours");
+  }
+
+  convertToUTC(date: Date): string {
+    return dayjs(date).utc().local().format();
+  }
+
+  compareInDays(start_date: Date, end_date: Date): number {
+    const end_date_utc = this.convertToUTC(end_date);
+    const start_date_utc = this.convertToUTC(start_date);
+
+    return dayjs(end_date_utc).diff(start_date_utc, "days");
+  }
+  addDays(days: number): Date {
+    return dayjs().add(days, "days").toDate();
+  }
+}
+```
+
+Agora só está faltando adicionar o repositório users_tokens ao container do tsrynge. então em `shared/container/index.ts` adicionamos o seguinte código:
+
+**`index.ts`:**
+
+```ts
+container.registerSingleton<IUsersTokensRepository>(
+  "UsersTokensRepository",
+  UsersTokensRepository
+);
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
