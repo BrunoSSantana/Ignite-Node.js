@@ -7287,7 +7287,7 @@ export class CreateUsersToken1626716982571 implements MigrationInterface {
             isPrimary: true,
           },
           {
-            name: "refres_token",
+            name: "refresh_token",
             type: "varchar",
           },
           {
@@ -7337,7 +7337,7 @@ Com a migration executada vamos agora criar nossa Entity e iniciar nosso reposit
 **`UserTokens.ts`:**
 
 ```ts
-@Entity()
+@Entity("users_tokens")
 class UserTokens {
   @PrimaryColumn()
   id: string;
