@@ -7681,7 +7681,7 @@ class UsersTokensRepository implements IUsersTokensRepository {
 }
 ```
 
-## Aula CXXXIV
+## Aula CXXXV
 > Crontroller refresh token
 
 Seguindo com a implemntação do nosso refresh token vamos nos encaminhar agora para o controller onde teremos a seguinte estrutura:
