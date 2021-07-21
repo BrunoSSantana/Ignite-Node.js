@@ -7681,6 +7681,95 @@ class UsersTokensRepository implements IUsersTokensRepository {
 }
 ```
 
+## Aula CXXXIV
+> Crontroller refresh token
+
+Seguindo com a implemntação do nosso refresh token vamos nos encaminhar agora para o controller onde teremos a seguinte estrutura:
+
+**`RefreshTokenController.ts`:**
+
+```ts
+class RefreshTokenController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    // pegando o token de diversas rotas
+    const token =
+      request.body.token ||
+      request.headers["x-access-token"] ||
+      request.query.token;
+    // instanciando o useCase
+    const refreshTokenUseCase = container.resolve(RefreshTokenUseCase);
+    // executando o useCase
+    const refresh_token = await refreshTokenUseCase.execute(token);
+    // retorando o token
+    return response.json(refresh_token);
+  }
+}
+```
+E para finalizar vamos criar uma rota onde estaremos passando este nosso controller.
+
+**`authenticate.routes.ts`:**
+
+```ts
+// Resto do código
+const authenticateUserController = new AuthenticateUserController();
+const refreshTokenController = new RefreshTokenController();
+// rotas de utentificação
+authenticateRoutes.post("/sessions", authenticateUserController.handle);
+authenticateRoutes.post("/refresh-token", refreshTokenController.handle);
+```
+
+Nesse momento o middleware de autentificação não reconhece nosso refresh token, apra que ele reconheça nosso refresh token vamos fazer algumas auterações.
+
+**`ensureAutheticated.ts`:**
+
+```ts
+interface IPayload {
+  sub: string;
+}
+
+export async function ensureAuthenticated(
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> {
+  const authHeader = request.headers.authorization;
+
+  // instanciando o repositório do reresh token 
+  const userTokensRepository = new UsersTokensRepository();
+
+  if (!authHeader) {
+    throw new AppError("Token missing", 401);
+  }
+
+  const [, token] = authHeader.split(" ");
+
+  try {
+    const { sub: user_id } = verify(
+      token,
+      // passando a chave secreta do refresh token
+      auth.secret_refresh_token
+    ) as IPayload;
+    // autenticando usuário
+    const user = await userTokensRepository.findByUserIdAndRefreshToken(
+      user_id,
+      token
+    );
+
+    if (!user) {
+      throw new AppError("User does not exists!", 401);
+    }
+
+    request.user = {
+      id: user_id,
+    };
+
+    next();
+  } catch (error) {
+    throw new AppError("Invalid token", 401);
+  }
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
