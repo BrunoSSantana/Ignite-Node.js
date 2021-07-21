@@ -7839,6 +7839,176 @@ class DayjsDateProvider implements IDateProvider {
 }
 ```
 
+
+## Aula CXXXVII
+> Criando provider de e-mail
+
+Para o envio do email, vamos usar Ethereal para simularmos o envio de emails, para que posteriormente possamos substituir por uma lib para produção, vamos criar um provider no diretório `container/providers/`.
+
+**`IMailProvider.ts`:**
+
+```ts
+interface IMailProvider {
+  sendMail(to: string, subject: string, body: string): Promise<void>;
+}
+```
+na mesma pasta que foi criada a interface, vamos criar diretório `implementations` com o arquivo `EtherealMailProvider.ts`.
+
+**`EtherealMailProvider.ts`:**
+
+```ts
+@injectable()
+class EtherealMailProvider implements IMailProvider {
+  private client: Transporter;
+  // configurando o nodemailer
+  constructor() {
+    nodemailer
+      .createTestAccount()
+      .then((account) => {
+        const transporter = nodemailer.createTransport({
+          host: account.smtp.host,
+          port: account.smtp.port,
+          secure: account.smtp.secure,
+          auth: {
+            user: account.user,
+            pass: account.pass,
+          },
+        });
+
+        this.client = transporter;
+      })
+      .catch((err) => console.error(err));
+  }
+  async sendMail(to: string, subject: string, body: string): Promise<void> {
+    const message = await this.client.sendMail({
+      // para
+      to,
+      // de
+      from: "Rentalx <noreplay@rentalx.com.br>",
+      // assunto
+      subject,
+      // mensagem
+      text: body,
+      // mensagem
+      html: body,
+    });
+    // receber o link
+    console.log("Message sent: %s", message.messageId);
+    // Preview only available when sending through an Ethereal account
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(message));
+  }
+}
+```
+Com o provider criado vamos usar o tsrynge para "instanciarmos" ele quando for necessário. Então no diretório `container/providers/` vamos adicionar o seguite código ao arquivo `index.ts`:
+
+**`index.ts`:**
+
+```ts
+// Resto do código
+
+container.registerInstance<IMailProvider>(
+  "EtherealMailProvider",
+  new EtherealMailProvider()
+);
+```
+
+Agora finalmente podemos trabalhar nosso caso de uso e nosso controller antes de ir para rota.
+
+**`SendForGotPasswordMailUseCase.ts`:**
+
+```ts
+@injectable()
+class SendForGotPasswordMailUseCase {
+  constructor(
+    @inject("UsersRepository")
+    private usersRepository: IUsersRepository,
+    @inject("UsersTokensRepository")
+    private usersTokensRepository: IUsersTokensRepository,
+    @inject("DayjsDateProvider")
+    private dateProvider: DayjsDateProvider,
+    @inject("EtherealMailProvider")
+    private mailProvider: IMailProvider
+  ) {}
+  async execute(email: string): Promise<void> {
+    const user = await this.usersRepository.findByEmail(email);
+
+    if (!user) {
+      throw new AppError("User does not exists");
+    }
+
+    const token = uuidv4();
+
+    const expires_date = this.dateProvider.addHours(3);
+
+    await this.usersTokensRepository.create({
+      refresh_token: token,
+      user_id: user.id,
+      expires_date,
+    });
+    // enviando o email pelo provider, passando o email a ser enviado e o token
+    await this.mailProvider.sendMail(
+      email,
+      "Recupereação de Senha",
+      `O link para o reset é ${token}`
+    );
+  }
+}
+```
+
+**`SendForGotPasswordMailController.ts`:**
+
+```ts
+class SendForGotPasswordMailController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    // pegando o email do body
+    const { email } = request.body;
+    // "instanciando"
+    const sendForGotPasswordMailUseCase = container.resolve(
+      SendForGotPasswordMailUseCase
+    );
+    // executando o caso de uso
+    await sendForGotPasswordMailUseCase.execute(email);
+
+    return response.send();
+  }
+}
+```
+
+Para manipularmos melhor as rotas que estaram envolvidas com a recuperação de senha, vamos criar o arquivo `password.routes.ts` na pasta `http/routes/` em `shared/infra/`
+
+**`password.routes.ts`:**
+
+```ts
+import { Router } from "express";
+
+import { SendForGotPasswordMailController } from "@modules/accounts/useCases/sendForGotPasswordMail/SendForGotPasswordMailController";
+
+const passwordRoutes = Router();
+
+const sendForGotPasswordMailController = new SendForGotPasswordMailController();
+
+passwordRoutes.post("/forgot", sendForGotPasswordMailController.handle);
+
+export { passwordRoutes };
+```
+
+E agora pegamos essa rota no **`routes/index.ts`:**
+
+```ts
+const router = Router();
+
+router.use("/categories", categoriesRoutes);
+router.use("/specifications", specificationsRoutes);
+router.use("/users", usersRoutes);
+router.use("/cars", carsRoutes);
+router.use("/rentals", rentalsRoutes);
+router.use("/password", passwordRoutes);
+router.use(authenticateRoutes);
+
+export { router };
+```
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
