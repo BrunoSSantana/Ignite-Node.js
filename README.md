@@ -7770,6 +7770,75 @@ export async function ensureAuthenticated(
 }
 ```
 
+
+## Aula CXXXVI
+> Criando caso de uso recuperação de senha
+
+Vamos criar a função na nossa aplicação de recuperação de senha.
+fluxograma
+- usuário passando email
+- gerar token a partir do email, gerar token com expiração de 3 horas
+- enviar link para o usuário com token
+- usuário cria nova senha
+
+para essa funcionalidade vamos requer a instalação da lib `nodemailer`, a qual será instalada pelo yarn com o comando: `yarn add nodemailer`.
+
+instalado o `nodemailer` vamos criar o caso de uso responssável por esse processo de recuperação de senha. Então no módule de `accounts` vamos criar em `useCases` o diretório `SendForGotPasswordMail` com a classe `SendForGotPasswordMailUseCase` com a seguinte estrutura:
+
+**`SendForGotPasswordMailUseCase.ts`:**
+
+```ts
+@injectable()
+class SendForGotPasswordMailUseCase {
+  // Repositórios 
+  constructor(
+    @inject("UsersRepository")
+    private usersRepository: IUsersRepository,
+    @inject("UsersTokensRepository")
+    private usersTokensRepository: IUsersTokensRepository,
+    @inject("DayjsDateProvider")
+    private dateProvider: DayjsDateProvider
+  ) {}
+  // recebendo o email
+  async execute(email: string): Promise<void> {
+    // buscando o usuário pelo email informado
+    const user = await this.usersRepository.findByEmail(email);
+    // se não existir usuário, retorna mensagem de erro
+    if (!user) {
+      throw new AppError("User does not exists");
+    }
+    // criand o token de recuperação de se senha
+    const token = uuidv4();
+    // criando horário de expira
+    // criar método em DayjsdateProvider
+    const expires_date = this.dateProvider.addHours(3);
+    // salvando token
+    await this.usersTokensRepository.create({
+      refresh_token: token,
+      user_id: user.id,
+      expires_date,
+    });
+  }
+}
+```
+
+Agora vamos apenas criar o método que adiciona horas usado para criar a `expires_date`. Antes da criação em si, vamos indicar na interface de `IDateProvider` que estamos utilizando.
+```ts
+interface IDateProvider {
+  // resntante do código
+  addHours(hours: number): Date;
+}
+```
+
+```ts
+class DayjsDateProvider implements IDateProvider {
+  // restante do código
+  addHours(hours: number): Date {
+    return dayjs().add(hours, "hour").toDate();
+  }
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
