@@ -7581,6 +7581,106 @@ container.registerSingleton<IUsersTokensRepository>(
 );
 ```
 
+## Aula CXXXIV
+> Criando caso de uso do refresh token
+
+Requesição para o cliente receber um novo refresh_token baseado no que foi expirado. Vamos começar criando um useCase, `refresh_token`, no módulo de `accounts`. Dentro desse diretório, vamos crair o UseCase e o Controller. Vamos então iniciar criando o arquivo `RefreshTokenUseCase.ts`.
+
+**`RefreshTokenUseCase.ts`:**
+
+```ts
+interface IPayload {
+  sub: string;
+  email: string;
+}
+
+@injectable()
+class RefreshTokenUseCase {
+  constructor(
+    @inject("UsersTokensRepository")
+    private usersTokensRepository: IUsersTokensRepository,
+    @inject("DayjsDateProvider")
+    private dateProvider: IDateProvider
+  ) {}
+
+  async execute(token: string): Promise<string> {
+    // verificando e buscando as iformações do token
+    const { email, sub } = verify(token, auth.secret_refresh_token) as IPayload;
+
+    const user_id = sub;
+    // buscando token
+    const userToken =
+    // aqui vamos criar um método em nosso repositório
+      await this.usersTokensRepository.findByUserIdAndRefreshToken(
+        user_id,
+        token
+      );
+    // validando token
+    if (!userToken) {
+      throw new AppError("Refresh Token does not exists!");
+    }
+    // se existir, delete
+    // aqui vamos criar um método em nosso repositório
+    await this.usersTokensRepository.deleteById(userToken.id);
+    // criando novo token
+    const refresh_token = sign({ email }, auth.secret_refresh_token, {
+      subject: sub,
+      expiresIn: auth.expires_in_refresh_token,
+    });
+    // criando data de expiração
+    const expires_date = this.dateProvider.addDays(
+      auth.expires_refresh_token_days
+    );
+    // salvando no banco de dados
+    await this.usersTokensRepository.create({
+      expires_date,
+      refresh_token,
+      user_id,
+    });
+    // retornando novo token
+    return refresh_token;
+  }
+}
+```
+
+UseCase criado vamos cria os métodos que faz a validação do nosso token e que posteriormente deleta o token expirado.
+
+**`IUsersTokensRepository`:**
+
+```ts
+interface IUsersTokensRepository {
+  // resto do código
+  findByUserIdAndRefreshToken(
+    user_id: string,
+    refresh_token: string
+  ): Promise<UserTokens>;
+  deleteById(id: string): Promise<void>;
+}
+```
+E pra finalizar vamos implementar nossos métodos no repositório.
+
+**`UsersTokensRepository`:**
+
+```ts
+class UsersTokensRepository implements IUsersTokensRepository {
+  async findByUserIdAndRefreshToken(
+    user_id: string,
+    refresh_token: string
+  ): Promise<UserTokens> {
+    // buscamos apenas um pois a tendência é manter apenas um refresh_token já que vamos deletar em seguida
+    const usersTokens = await this.repository.findOne({
+      user_id,
+      refresh_token,
+    });
+    return usersTokens;
+  }
+
+  async deleteById(user_id: string): Promise<void> {
+    await this.repository.delete(user_id);
+  }
+}
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
