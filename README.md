@@ -8008,6 +8008,188 @@ router.use(authenticateRoutes);
 export { router };
 ```
 
+## Aula CXXXVIII
+> Inserindo template engine para envio de e-mail
+
+Agora vamos melhorar nosso email, deixar ele estéticamente mais agradável. Nesse sentido vamos adicionar uma biblioteca, uma template engine chamada `handlebars` aqual vamos adicioanr com o seguinte código: `yarn add handlebars`.
+
+Em seguida no módulo de `accounts` vamos criar o diretório `views/emails/` com o arquivo `forgotPassword.hbs` com a estrutura:
+
+**`forgotPassword.hbs`**
+
+```hbs
+<style>
+  .container{
+    width: 800px;
+    font-family: Arial, Helvetica, sans-serif;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+  }
+  span{
+    margin: 10px;
+  }
+</style>
+
+<div class="container">
+  <span>Oi, {{name}}</span>
+  <br/>
+  <span>Você solicitou alteração de senha.</span>
+  <span>Para realizar  a troca, clique no link
+    <a href={{link}}>{{link}}</a>
+  </span>
+
+  <span>Caso não tenha sido você que solicitou a alteraçãode senha, basta ignorar o e-mail.</span>
+
+  <strong>Obrigado!</strong>
+
+  <h3>Equipe | <strong>Rentalx</strong></h3>
+</div>
+```
+
+Para podermos receber esse template no nosso Provider vamos fazer algumas pequenas modificações.
+
+**`IMailProvider.ts`:**
+
+```ts
+interface IMailProvider {
+  sendMail(
+    to: string,
+    subject: string,
+    path: string,
+    variables: any
+  ): Promise<void>;
+}
+export { IMailProvider };
+```
+E para implementar:
+
+**`EtherealMailProvider.ts`:**
+
+```ts
+import fs from "fs";
+import handlebars from "handlebars";
+import nodemailer, { Transporter } from "nodemailer";
+import { injectable } from "tsyringe";
+
+import { IMailProvider } from "../IMailProvider";
+
+@injectable()
+class EtherealMailProvider implements IMailProvider {
+  private client: Transporter;
+  constructor() {
+    nodemailer
+      .createTestAccount()
+      .then((account) => {
+        const transporter = nodemailer.createTransport({
+          host: account.smtp.host,
+          port: account.smtp.port,
+          secure: account.smtp.secure,
+          auth: {
+            user: account.user,
+            pass: account.pass,
+          },
+        });
+
+        this.client = transporter;
+      })
+      .catch((err) => console.error(err));
+  }
+  async sendMail(
+    to: string,
+    subject: string,
+    path: string,
+    variables: any
+  ): Promise<void> {
+    const templateFileContent = fs.readFileSync(path).toString("utf-8");
+
+    const templateParse = handlebars.compile(templateFileContent);
+
+    const templateHTML = templateParse(variables);
+
+    const message = await this.client.sendMail({
+      to,
+      from: "Rentalx <noreplay@rentalx.com.br>",
+      subject,
+      html: templateHTML,
+    });
+
+    console.log("Message sent: %s", message.messageId);
+    // Preview only available when sending through an Ethereal account
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(message));
+  }
+}
+export { EtherealMailProvider };
+```
+
+Uzando o Mailprovider no useCase:
+
+**`SendForGotPasswordMailUseCase.ts`:**
+
+```ts
+import { resolve } from "path";
+// resto dos imports
+@injectable()
+class SendForGotPasswordMailUseCase {
+  constructor(
+    @inject("UsersRepository")
+    private usersRepository: IUsersRepository,
+    @inject("UsersTokensRepository")
+    private usersTokensRepository: IUsersTokensRepository,
+    @inject("DayjsDateProvider")
+    private dateProvider: DayjsDateProvider,
+    @inject("EtherealMailProvider")
+    private mailProvider: IMailProvider
+  ) {}
+  async execute(email: string): Promise<void> {
+    const user = await this.usersRepository.findByEmail(email);
+    // path do template
+    const templatePath = resolve(
+      __dirname,
+      "..",
+      "..",
+      "views",
+      "emails",
+      "forgotPassword.hbs"
+    );
+
+    if (!user) {
+      throw new AppError("User does not exists");
+    }
+
+    const token = uuidv4();
+
+    const expires_date = this.dateProvider.addHours(3);
+
+    await this.usersTokensRepository.create({
+      refresh_token: token,
+      user_id: user.id,
+      expires_date,
+    });
+    // variáveis que serão passadas para o template do handlebars
+    const variables = {
+      name: user.name,
+      // link pro reset
+      // variável de ambiente
+      link: `${process.env.FORGOT_MAIL_URL}${token}`,
+    };
+
+    await this.mailProvider.sendMail(
+      email,
+      "Recupereação de Senha",
+      templatePath,
+      variables
+    );
+  }
+}
+export { SendForGotPasswordMailUseCase };
+```
+
+Agora vamos finalizar criando o arquivo `.env` na raiz do projeto com a variável de ambiente que acabamos de passar para o link do reset.
+
+```
+FORGOT_MAIL_URL=http://localhost:3333/password/reset?token=
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
