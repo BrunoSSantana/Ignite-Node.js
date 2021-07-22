@@ -8319,6 +8319,87 @@ passwordRoutes.post("/reset", resetPasswordUserController.handle);
 
 Daí então, com o link enviado por email a partir da rota `/forgot` podemos enviar nosso novo `password` e estará completo nosso objetivo.
 
+
+## Aula CXL
+> Caso de uso de reset de senha
+
+Após refatorar essa parte de autentificação e criar na nossa APi a funcionalidade de recuperação de senha nossos testes se formos rodar, veremos que eles tabém vão requerer algumas alterações, que basicamente são:
+- Criação do `UsersTokensRepositoryInMemory`;
+
+
+**`UsersTokensRepositoryInMemory.ts`:**
+
+```ts
+class UsersTokensRepositoryInMemory implements IUsersTokensRepository {
+  usersTokens: UserTokens[] = [];
+  async create({
+    expires_date,
+    refresh_token,
+    user_id,
+  }: ICreateUserTokenDTO): Promise<UserTokens> {
+    const userToken = new UserTokens();
+
+    Object.assign(userToken, {
+      expires_date,
+      refresh_token,
+      user_id,
+    });
+
+    this.usersTokens.push(userToken);
+
+    return userToken;
+  }
+  async findByUserIdAndRefreshToken(
+    user_id: string,
+    refresh_token: string
+  ): Promise<UserTokens> {
+    const userToken = this.usersTokens.find(
+      (ut) => ut.id === user_id && ut.refresh_token === refresh_token
+    );
+    return userToken;
+  }
+  async deleteById(id: string): Promise<void> {
+    const userToken = this.usersTokens.find((ut) => ut.id === id);
+    this.usersTokens.splice(this.usersTokens.indexOf(userToken));
+  }
+  async findByRefreshToken(refresh_token: string): Promise<UserTokens> {
+    const userToken = this.usersTokens.find(
+      (ut) => ut.refresh_token === refresh_token
+    );
+
+    return userToken;
+  }
+}
+```
+- Instanciamento do `UsersTokensRepositoryInMemory`, `DayjsDateProvider` no test de `AuthenticateUserUseCase`;
+
+**`AuthenticateUserUseCase.spec.ts`:**
+
+```ts
+let authenticateUserUseCase: AuthenticateUserUseCase;
+let usersRepositoryInMemory: UsersRepositoryInMemory;
+let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;
+let dateProvider: DayjsDateProvider;
+
+let createUserUseCase: CreateUserUseCase;
+describe("Authenticate User", () => {
+  beforeEach(() => {
+    usersRepositoryInMemory = new UsersRepositoryInMemory();
+    usersTokensRepositoryInMemory = new UsersTokensRepositoryInMemory();
+    dateProvider = new DayjsDateProvider();
+    authenticateUserUseCase = new AuthenticateUserUseCase(
+      usersRepositoryInMemory,
+      usersTokensRepositoryInMemory,
+      dateProvider
+    );
+    createUserUseCase = new CreateUserUseCase(usersRepositoryInMemory);
+  });
+  // Rest do código
+});
+
+```
+- Mudar os parâmetros de `token` para `refres_toke` nos testes de `CreateCategoryController` e `ListCategoriesController`, que não é mais o **token** responssável pela autentificaçãoe sim o **refresh_token**.
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
