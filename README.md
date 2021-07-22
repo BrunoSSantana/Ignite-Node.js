@@ -8191,6 +8191,134 @@ Agora vamos finalizar criando o arquivo `.env` na raiz do projeto com a variáve
 FORGOT_MAIL_URL=http://localhost:3333/password/reset?token=
 ```
 
+
+## Aula CXXXIX
+> Caso de uso de reset de senha
+
+Agora nosso obejtivo é pegar esse link e recuperar a senha do usuário, Para tal ação, iremos criar mais um useCase no módulo de `accounts/` que iremos chamar de `resetPasswordUser/` com os repectivos arquivos de `UseCase` e `Controller`.
+
+**`ResetPasswordUserUseCase`:**
+
+```ts
+interface IRequest {
+  token: string;
+  password: string;
+}
+
+@injectable()
+class ResetPasswordUserUseCase {
+  constructor(
+    @inject("UsersTokensRepository")
+    private usersTokensRepository: IUsersTokensRepository,
+    @inject("DayjsDateProvider")
+    private dateprovider: IDateProvider,
+    @inject("UsersRepository")
+    private usersRepository: IUsersRepository
+  ) {}
+  async execute({ password, token }: IRequest): Promise<void> {
+    // busca UserToken oelo token
+    const userToken = await this.usersTokensRepository.findByRefreshToken(
+      token
+    );
+    // verifica se existe um token
+    if (!userToken) {
+      throw new AppError("Token invalid!");
+    }
+    // verifica se o token foi expirado
+    if (
+      this.dateprovider.compareIfBefore(
+        userToken.expires_date,
+        this.dateprovider.dateNow()
+      )
+    ) {
+      throw new AppError("Token expired!");
+    }
+    // busca o usuário daquele token
+    const user = await this.usersRepository.findById(userToken.user_id);
+    // reescreve a senha
+    user.password = await hash(password, 8);
+    // Salva senha criada
+    await this.usersRepository.create(user);
+    // deleta token criado anteriormente
+    await this.usersTokensRepository.deleteById(userToken.id);
+  }
+}
+```
+Como vimos no useCase acima, nem todos métodos em `UsersTokensRepository` `DayjsDateProvider` usados alí estão criado, nesse caso vamos criá-los agora.
+
+**`IUsersTokensRepository.ts`:**
+
+```ts
+interface IUsersTokensRepository {
+  // Restante do código
+  findByRefreshToken(refresh_token: string): Promise<UserTokens>;
+}
+```
+
+**`UsersTokensRepository.ts`:**
+
+```ts
+class UsersTokensRepository implements IUsersTokensRepository {
+
+  // Resto do código
+  async findByRefreshToken(refresh_token: string): Promise<UserTokens> {
+    const userToken = await this.repository.findOne({ refresh_token });
+    return userToken;
+  }
+}
+```
+
+**`IDateProvider.ts`:**
+
+```ts
+interface IDateProvider {
+  // Resto do código
+  compareIfBefore(start_date: Date, end_date: Date): boolean;
+}
+```
+
+**`DayjsDateProvider.ts`:**
+
+```ts
+class DayjsDateProvider implements IDateProvider {
+  // resto do código
+  compareIfBefore(start_date: Date, end_date: Date): boolean {
+    return dayjs(start_date).isBefore(end_date);
+  }
+}
+```
+
+Com os módulos criados, podemos então dar continuidade com nosso controller.
+
+**`ResetPasswordUserController`:**
+
+```ts
+class ResetPasswordUserController {
+  async handle(request: Request, response: Response): Promise<Response> {
+    const { token } = request.query;
+    const { password } = request.body;
+
+    const resetPasswordUserUseCase = container.resolve(
+      ResetPasswordUserUseCase
+    );
+    // garantimos o formato do token em string pois é esse tipo que o método execute() espera
+    resetPasswordUserUseCase.execute({ token: String(token), password });
+
+    return response.send();
+  }
+}
+```
+Para finalizar vamos criar rapídamente a rota da seguinte maneira.
+**`password.routes.ts`:**
+
+```ts
+// Resto do código
+const resetPasswordUserController = new ResetPasswordUserController();
+passwordRoutes.post("/reset", resetPasswordUserController.handle);
+```
+
+Daí então, com o link enviado por email a partir da rota `/forgot` podemos enviar nosso novo `password` e estará completo nosso objetivo.
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
