@@ -8321,7 +8321,7 @@ Daí então, com o link enviado por email a partir da rota `/forgot` podemos env
 
 
 ## Aula CXL
-> Caso de uso de reset de senha
+> Refatorando testes
 
 Após refatorar essa parte de autentificação e criar na nossa APi a funcionalidade de recuperação de senha nossos testes se formos rodar, veremos que eles tabém vão requerer algumas alterações, que basicamente são:
 - Criação do `UsersTokensRepositoryInMemory`;
