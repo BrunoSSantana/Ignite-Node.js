@@ -8495,6 +8495,25 @@ describe("Send Forgot Mail", () => {
 });
 ```
 
+## Aula CXLII
+> Coverage Report
+
+Vamos configurar o jest para ele nos reportar a cobertura de nossos testes, oq foi testado ou não em toda nossa aplicação. Para isso, no `jest.config.ts` vamos modificar as seguintes propriedades:
+
+```ts
+export default{
+  collectCoverage: true,
+
+  collectCoverageFrom: ["<rootDir>/src/modules/**/useCases/**/*.ts"],
+
+  coverageDirectory: "coverage",
+
+  coverageProvider: "v8",
+
+  coverageReporters: ["text-summary", "lcov"],
+}
+```
+
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
