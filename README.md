@@ -8400,6 +8400,102 @@ describe("Authenticate User", () => {
 ```
 - Mudar os parâmetros de `token` para `refres_toke` nos testes de `CreateCategoryController` e `ListCategoriesController`, que não é mais o **token** responssável pela autentificaçãoe sim o **refresh_token**.
 
+
+## Aula CXLI
+> Testando envio de e-mail
+
+Vamos agora criar o teste de envio de email. Para isso vamos criar o arquivo `SendForGotPasswordMailUseCase.spec.ts` na pasta juntamente com o seu caso de uso, mas antes de executarmos nosso teste, precisamos criar o ProviderInMemory no MailProvider. Com essa intenção, na pasta de `providers/MailProvider` vamos criar o diretório `in-memory` com o arquivo **`MailProviderInMemory.ts`**, com a seguinte estrutura:
+
+```ts
+class MailProviderInMemory implements IMailProvider {
+  private message: any[] = [];
+  async sendMail(
+    to: string,
+    subject: string,
+    path: string,
+    variables: any
+  ): Promise<void> {
+    this.message.push({
+      to,
+      subject,
+      path,
+      variables,
+    });
+  }
+}
+```
+
+E no teste:
+
+`SendForGotPasswordMailUseCase.spec.ts`
+
+```ts
+let sendForGotPasswordMailUseCase: SendForGotPasswordMailUseCase;
+let usersRepositoryInMemory: UsersRepositoryInMemory;
+let dateProvider: DayjsDateProvider;
+let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;
+let mailProvider: MailProviderInMemory;
+
+describe("Send Forgot Mail", () => {
+  beforeEach(() => {
+    usersRepositoryInMemory = new UsersRepositoryInMemory();
+    usersTokensRepositoryInMemory = new UsersTokensRepositoryInMemory();
+    dateProvider = new DayjsDateProvider();
+    mailProvider = new MailProviderInMemory();
+
+    sendForGotPasswordMailUseCase = new SendForGotPasswordMailUseCase(
+      usersRepositoryInMemory,
+      usersTokensRepositoryInMemory,
+      dateProvider,
+      mailProvider
+    );
+  });
+
+  it("should be able to send a forgot password mail to user", async () => {
+    // observa em mailProvider o método sendMail
+    const sendMail = jest.spyOn(mailProvider, "sendMail");
+    // cria usuário
+    await usersRepositoryInMemory.create({
+      driver_license: "189723",
+      email: "user@rentalx.com",
+      name: "User",
+      password: "123",
+    });
+    // executa useCase
+    await sendForGotPasswordMailUseCase.execute("user@rentalx.com");
+    // espera que sendMail seja chamado
+    expect(sendMail).toHaveBeenCalled();
+  });
+
+  it("should not be able to send an email if user does not exists", async () => {
+    // espera que seja rejetado já que não foi cadastrado usuário com esse email
+    await expect(
+      sendForGotPasswordMailUseCase.execute("aleatoryEmail@rentalx.com")
+    ).rejects.toEqual(new AppError("User does not exists"));
+  });
+
+  it("should be able to create an users token", async () => {
+    // observa se foi chamado o create da classe usersTokensRepositoryInMemory
+    const generateTokenMail = jest.spyOn(
+      usersTokensRepositoryInMemory,
+      "create"
+    );
+
+    await usersRepositoryInMemory.create({
+      driver_license: "189723",
+      email: "otherUser@rentalx.com",
+      name: "User",
+      password: "123",
+    });
+
+    await sendForGotPasswordMailUseCase.execute("otherUser@rentalx.com");
+    // espera que o create de usersTokensRepositoryInMemory tenha sido chamado
+    expect(generateTokenMail).toBeCalled();
+  });
+});
+```
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
