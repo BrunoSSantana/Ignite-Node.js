@@ -8623,6 +8623,13 @@ export async function ensureAuthenticated(
 }
 ```
 
+## Aula CXLV
+> Criando conta na AWS
+
+Vamos  precisar de uma conta na aws para podermos dar continuidade com a nossa API, fazendo o armazenamento dela no storage da aws.
+
+Storage - São armarzenamentos específicos dentro da cloud para armazenamento de arquivos. O que será usado nesse projeto será o da amazon, **S3**.
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
