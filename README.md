@@ -8514,6 +8514,114 @@ export default{
 }
 ```
 
+## Aula CXLIV
+> Corrigindo o refresh token
+
+Aqui vamos corrigir o refresh_token para que o token cumpra com a finalidade que foi concebido.
+
+- **Refresh_Token:** vai atualizar o token 
+- **Token:** Vai autentificar o usuário
+
+`RefreshTokenUseCase.ts`
+
+```ts
+interface IPayload {
+  sub: string;
+  email: string;
+}
+
+interface ITokenResponse {
+  token: string;
+  refresh_token: string;
+}
+
+@injectable()
+class RefreshTokenUseCase {
+  constructor(
+    @inject("UsersTokensRepository")
+    private usersTokensRepository: IUsersTokensRepository,
+    @inject("DayjsDateProvider")
+    private dateProvider: IDateProvider
+  ) {}
+
+  async execute(token: string): Promise<ITokenResponse> {
+    const { email, sub } = verify(token, auth.secret_refresh_token) as IPayload;
+
+    const user_id = sub;
+
+    const userToken =
+      await this.usersTokensRepository.findByUserIdAndRefreshToken(
+        user_id,
+        token
+      );
+
+    if (!userToken) {
+      throw new AppError("Refresh Token does not exists!");
+    }
+
+    await this.usersTokensRepository.deleteById(userToken.id);
+
+    const refresh_token = sign({ email }, auth.secret_refresh_token, {
+      subject: sub,
+      expiresIn: auth.expires_in_refresh_token,
+    });
+
+    const expires_date = this.dateProvider.addDays(
+      auth.expires_refresh_token_days
+    );
+
+    await this.usersTokensRepository.create({
+      expires_date,
+      refresh_token,
+      user_id,
+    });
+
+    const newToken = sign({}, auth.secret_token, {
+      subject: user_id,
+      expiresIn: auth.expires_in_token,
+    });
+
+    return {
+      refresh_token,
+      token: newToken,
+    };
+  }
+}
+```
+
+`ensureAuthenticated.ts`
+
+```ts
+interface IPayload {
+  sub: string;
+}
+
+export async function ensureAuthenticated(
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> {
+  const authHeader = request.headers.authorization;
+
+  if (!authHeader) {
+    throw new AppError("Token missing", 401);
+  }
+
+  const [, token] = authHeader.split(" ");
+
+  try {
+    const { sub: user_id } = verify(token, auth.secret_token) as IPayload;
+
+    request.user = {
+      id: user_id,
+    };
+
+    next();
+  } catch (error) {
+    throw new AppError("Invalid token", 401);
+  }
+}
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
