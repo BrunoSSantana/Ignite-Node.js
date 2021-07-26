@@ -8630,6 +8630,35 @@ Vamos  precisar de uma conta na aws para podermos dar continuidade com a nossa A
 
 Storage - São armarzenamentos específicos dentro da cloud para armazenamento de arquivos. O que será usado nesse projeto será o da amazon, **S3**.
 
+## Aula CXLVI
+> Criação do usuário e S3
+
+AWS_KEY = AKIATS6R5TEJCBH6FWWP
+
+CHAVE_SECRETA = 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
+
+Agora nosso objetivo é criar um bucket, que seria algo parecido com um diretório onde será armazenado nossos arquivos, mas antes, vamos também criar um usuário, um **IAM**. Para isso:
+
+- Vamos buscar nos services da aws, o `IAM - Manage access to AWS resources`
+- Buscar `Usuários` na seção do lado esquerdo e adicionar e clicar no botão de `Adicionar usuário`
+- Preencher `Nome de usuário` (qualquer nome)
+- Selecionar tipo de acesso: programático
+- Em Definir permissões, selecionar, `Anexar políticas existentes de forma direta` e nela marcar a permissão, AmazonS3FullAccess
+- Adicionar tags é opicional
+- Após revisar as escolhas é possível criar usuário
+- Copiar `chave de acesso secreta` e `ID da chave de Acesso`
+
+Com usuário finalizado vamos agora criar nosso bucket.
+
+- Nos serviços da aws vamos buscar por S3 - Scalable Storage in the Cloud
+- Clicar em `Criar bucket`
+- Criar nome único parao bucket
+- Escolher região
+- Desabilitar  a opção `Bloquear todo o acesso público`
+- Reconhecer as configurações do bloqueio
+- *Versionamento* e *Criptografia* desativadas
+- Clicar no botão de `Criar bucket`
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
