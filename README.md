@@ -8633,10 +8633,6 @@ Storage - São armarzenamentos específicos dentro da cloud para armazenamento d
 ## Aula CXLVI
 > Criação do usuário e S3
 
-AWS_KEY = AKIATS6R5TEJCBH6FWWP
-
-CHAVE_SECRETA = 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
-
 Agora nosso objetivo é criar um bucket, que seria algo parecido com um diretório onde será armazenado nossos arquivos, mas antes, vamos também criar um usuário, um **IAM**. Para isso:
 
 - Vamos buscar nos services da aws, o `IAM - Manage access to AWS resources`
