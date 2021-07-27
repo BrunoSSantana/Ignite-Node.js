@@ -8864,6 +8864,161 @@ container.registerSingleton<IStorageProvider>(
 );
 ```
 
+## Aula CXLIX
+> Criando URL de acesso do avatar
+
+Antes de tratar a urla do nosso avatar, vamos corrigir o upload de carros adicionando o storage provider a ele.
+
+`UploadCarImagesUseCase.ts`
+
+```ts
+interface IRequest {
+  car_id: string;
+  images_name: string[];
+}
+@injectable()
+class UploadCarImagesUseCase {
+  constructor(
+    @inject("CarsImagesRepository")
+    private carsImagesRepository: ICarsImagesRepository,
+    // injetando provider
+    @inject("StorageProvider")
+    private storageProvider: IStorageProvider
+  ) {}
+  async execute({ car_id, images_name }: IRequest): Promise<void> {
+    images_name.map(async (image) => {
+      await this.carsImagesRepository.create(car_id, image);
+      // salvando no storage, local ou remota a depender da variável de ambiente
+      await this.storageProvider.save(image, "cars");
+    });
+  }
+}
+```
+
+Agora vamos criar uma forma do usuário ver usas informações e para isso vamos criar mais um useCase em `accounts` com o diretório `profileUser/` e os arquivo de usecase e Controller, com a seguinte estrutura:
+
+`ProfileUserUseCase.ts`
+
+```ts
+@injectable()
+class ProfileUserUseCase {
+  constructor(
+    @inject("UsersRepository")
+    private usersRepository: IUsersRepository
+  ) {}
+
+  async execute(id: string): Promise<IUserResponseDTO> {
+    const user = await this.usersRepository.findById(id);
+    // para que possamos retornar ao usuário os dados de uma melhor maneira utilizamos  o mapper que iremmos ver a seguir
+    return UserMap.toDTO(user);
+  }
+}
+```
+
+**Mapper**
+
+`User.ts`
+
+```ts
+@Entity("users")
+class User {
+  // Resto do código
+
+  // com o Expose do class-transformer vamos usar acima do método em questão e usando  o name que será usado na aplicação dentro do @Expose({})
+  @Expose({ name: "avatar_url" })
+  avatar_url(): string {
+    switch (process.env.disk) {
+      case "local":
+        return `${process.env.APP_API_URL}/avatar/${this.avatar}`;
+      case "s3":
+        return `${process.env.AWS_BUCKET_URL}/avatar/${this.avatar}`;
+      default:
+        return null;
+    }
+  }
+
+  constructor() {
+    // ...
+  }
+}
+```
+
+`IUserResponseDTO`
+
+```ts
+interface IUserResponseDTO {
+  email: string;
+  name: string;
+  id: string;
+  avatar: string;
+  driver_license: string;
+  // indicamos que o avatar_url é uma função que retorna a string
+  avatar_url(): string;
+}
+```
+
+`UserMap`
+
+```ts
+class UserMap {
+  static toDTO({
+    email,
+    name,
+    id,
+    avatar,
+    driver_license,
+    avatar_url,
+  }: User): IUserResponseDTO {
+    // método da lib class-transformer que será responssável por capturar o avatar_url na nossa entidade
+    const user = classToClass({
+      email,
+      name,
+      id,
+      avatar,
+      driver_license,
+      // para pegar o avatar_url, precisamos utilizar um biblioteca que cria na nossa entidade uma nova propriedade, o class-transformer diretamente na entidade criando uma função que retorna um determinado valor
+      avatar_url,
+    });
+    return user;
+  }
+}
+```
+Asssim, passando as informações do usuário devidamente tratadas.
+
+`ProfileUserControler.ts`
+
+```ts
+class ProfileUserControler {
+  async handle(request: Request, response: Response): Promise<Response> {
+    const { id } = request.user;
+    const profileUserUseCase = container.resolve(ProfileUserUseCase);
+
+    const user = await profileUserUseCase.execute(id);
+    return response.json(user);
+  }
+}
+```
+Rotas:
+
+`users.routes.ts`
+
+```ts
+// ...
+const profileUserControler = new ProfileUserControler();
+usersRoutes.get("/profile", ensureAuthenticated, profileUserControler.handle);
+// ...
+```
+
+Configuração para buscar os arquivos localmente.
+
+`app.ts`
+
+```ts
+// ...
+app.use("/avatar", express.static(`${upload.tmpFolder}/avatar`));
+app.use("/cars", express.static(`${upload.tmpFolder}/cars`));
+// ...
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
