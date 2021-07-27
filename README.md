@@ -8848,16 +8848,22 @@ class S3StorageProvider implements IStorageProvider {
 }
 ```
 
-S3StorageProvider finalizado vamos mudar o provider que será instanciado no useCase.
+S3StorageProvider finalizado vamos mudar o provider que será instanciado no useCase ou o local, a dependender da variável de ambiente `disk=` que passarmos.
 
 `providers/index.ts`
 
 ```ts
+const diskStorage = {
+  local: LocalStorageProvider,
+  s3: S3StorageProvider,
+};
+
 container.registerSingleton<IStorageProvider>(
   "StorageProvider",
-  S3StorageProvider
+  diskStorage[process.env.disk]
 );
 ```
+
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
