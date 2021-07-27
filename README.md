@@ -8655,6 +8655,141 @@ Com usuário finalizado vamos agora criar nosso bucket.
 - *Versionamento* e *Criptografia* desativadas
 - Clicar no botão de `Criar bucket`
 
+## Aula CXLVII
+> Provider de Upload
+
+Aqui vamos coeçar a configurar nossa aplicação apra fazer o upload no bucket criado. Nesse sentido, vamos iniciar instalando a dependência que será responssável pelo comicação com o bucket da aws: `yarn add aws-sdk`. Além disso, vamos passar agora as chaves do bucket no arquivo `.env` em variáveis como indiva a documentação da aws.
+`.env`
+
+```
+FORGOT_MAIL_URL=http://localhost:3333/password/reset?token=
+
+# AWS Credentials
+AWS_ACCESS_KEY_ID=***********************
+AWS_SECRET_ACCESS_KEY=*****************************************
+AWS_BUCKET=api-rentalx-s3
+```
+
+Afim de deixar o código mais modular podendo trocar a lib/serviço responssável pelo upload além de facilitar nossos testes, vamos criar um provider para o storage. Então no diretório de `providers/`, vamos criar `StorageProvider/` com a interface `IStorageProvider.ts` e a pasta `implementations/` onde, por sua vez,terá o `LocalStorageProvider.ts`, com as seguintes estruturas:
+
+`IStorageProvider.ts`
+
+```ts
+interface IStorageProvider {
+  // recebe o nome do arquivo e a pasta que será salvo
+  save(file: string, folder: string): Promise<string>;
+  delete(file: string, folder: string): Promise<void>;
+}
+```
+
+Antes da implementação do nosso LocalStorage vamos fazer algumas modificações no arquivo `upload.ts` onde utilizamos o multer. para podermos utilizar já que vamos precisar tanto localmente quanto no nosso **S3** da AWS.
+
+`upload.ts`
+
+```ts
+const tmpFolder = resolve(__dirname, "..", "..", "tmp");
+
+export default {
+  tmpFolder,
+  storage: multer.diskStorage({
+    destination: tmpFolder,
+    filename: (request, file, callback) => {
+      const fileHash = crypto.randomBytes(16).toString("hex");
+      const fileName = `${fileHash}- ${file.originalname}`;
+
+      return callback(null, fileName);
+    },
+  }),
+};
+```
+
+`LocalStorageProvider.ts`
+
+```ts
+class LocalStorageProvider implements IStorageProvider {
+  async save(file: string, folder: string): Promise<string> {
+    // move o arquivo
+    await fs.promises.rename(
+      // daqui
+      resolve(upload.tmpFolder, file),
+      // para aqui
+      resolve(`${upload.tmpFolder}/${folder}`, file)
+    );
+    // retorna o nome do arquivo
+    return file;
+  }
+  async delete(file: string, folder: string): Promise<void> {
+    // pega o caminho
+    const filename = resolve(`${upload.tmpFolder}/${folder}`, file);
+
+    try {
+      await fs.promises.stat(filename);
+    } catch {
+      return;
+    }
+    // deleta o arquivo
+    await fs.promises.unlink(filename);
+  }
+}
+```
+Finalizado essa parte vamos usar nosso StorageProvider no `UpdateUserAvatarUseCase.ts`:
+
+```ts
+interface IRequest {
+  user_id: string;
+  avatar_file: string;
+}
+
+@injectable()
+class UpdateUserAvatarUseCase {
+  constructor(
+    // implementação dos containers
+    @inject("UsersRepository")
+    private usersRepository: IUsersRepository,
+    @inject("StorageProvider")
+    private storageProvider: IStorageProvider
+  ) {}
+
+  async execute({ user_id, avatar_file }: IRequest): Promise<void> {
+    const user = await this.usersRepository.findById(user_id);
+
+    if (user.avatar) {
+      await this.storageProvider.delete(user.avatar, "avatar");
+    }
+    // salvando arquivo na pasta avatar
+    await this.storageProvider.save(avatar_file, "avatar");
+
+    user.avatar = avatar_file;
+
+    await this.usersRepository.create(user);
+  }
+}
+```
+Antes de passarmos de finalizarmos com o container do StorageProvider,  vamos alterar um detalhe nas rotas onde usamos o `upload.ts`.
+
+`cars.routes.ts`
+
+```ts
+const upload = multer(uploadConfig);
+```
+
+`users.routes.ts`
+
+```ts
+const uploadAvatar = multer(uploadConfig);
+```
+
+E finalmente em `providers/`:
+
+`index.ts`
+
+```ts
+container.registerSingleton<IStorageProvider>(
+  "StorageProvider",
+  LocalStorageProvider
+);
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
