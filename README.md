@@ -9168,6 +9168,33 @@ Nesse projeto usaremos o serviço da AWS, o EC2.
   - `chmod 400 <nome do arquivo de chaves baichado>`
   - `ssh -i <nome do arquivo de chaves baichado> <restante das informações passadas>`
 
+## Aula CLIV
+> Configurando instância
+
+Agora já na nossa instância acessando via nosso terminal vamos seguir os seguintes procedimentos:
+
+- Criar usuário `sudo adduser app`
+- Atribuindo permissão de root: `sudo usermod -aG sudo app`
+- Acessando com nosso usuário: `sudo su - app`
+- Para Logar com usuário 
+  - `mkdir .ssh`
+  - Altera permi0sãso da pasta: `chmod 700 ./ssh`
+  - Entrar na pasta .ssh/: `cd ./ssh`
+  - Criar arquivo: touch authorized_keys
+  - Adicionar a chave ssh ao arquivo criado? `vi authorized_keys`
+  - Copia e cola a chave
+  - Dar autorização ao usuário: `chmod 600 authorized_keys`
+  - `ctrl + c`
+  - sudo service ssh restart
+- Na nossa máquina logamos na nossa instância: `ssh app@<IP>`
+- `sudo apt update`
+- Install node
+- Install docker
+- Install docker-compose
+- Install yarn
+
+Criando chave ssh: `ssh-keygen`
+buscando ssh-key: `cat ~/.ssh/id_rsa.pub`
 
 
 <h4 align="center"> 
