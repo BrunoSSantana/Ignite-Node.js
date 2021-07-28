@@ -9027,7 +9027,7 @@ app.use("/cars", express.static(`${upload.tmpFolder}/cars`));
 - Obter email
 - Validar email e domínio
 
-## Aula CXLI
+## Aula CLI
 > Criando provider do SESMail
 
 `SESMailProvider`
@@ -9173,10 +9173,11 @@ Nesse projeto usaremos o serviço da AWS, o EC2.
 
 Agora já na nossa instância acessando via nosso terminal vamos seguir os seguintes procedimentos:
 
+**Na nossa máquina**
 - Criar usuário `sudo adduser app`
 - Atribuindo permissão de root: `sudo usermod -aG sudo app`
 - Acessando com nosso usuário: `sudo su - app`
-- Para Logar com usuário 
+- Para Logar com usuário
   - `mkdir .ssh`
   - Altera permi0sãso da pasta: `chmod 700 ./ssh`
   - Entrar na pasta .ssh/: `cd ./ssh`
@@ -9186,15 +9187,56 @@ Agora já na nossa instância acessando via nosso terminal vamos seguir os segui
   - Dar autorização ao usuário: `chmod 600 authorized_keys`
   - `ctrl + c`
   - sudo service ssh restart
-- Na nossa máquina logamos na nossa instância: `ssh app@<IP>`
+**Na nossa máquina**
+ - *Antes de Adicionar a chave ssh*
+- Criando chave ssh: `ssh-keygen`
+- Buscando ssh-key: `cat ~/.ssh/id_rsa.pub`
+- *Após darautorização ao usuário*
+- logamos na nossa instância: `ssh app@<IP>`
 - `sudo apt update`
 - Install node
 - Install docker
 - Install docker-compose
 - Install yarn
 
-Criando chave ssh: `ssh-keygen`
-buscando ssh-key: `cat ~/.ssh/id_rsa.pub`
+
+## Aula CLV
+> Configurando o Babel na aplicação
+
+Para buildar nossa aplicação, ou seja transformar ela de typescript, liguagem essa que os navegarpres não entendem, para javascript, usaremos o babel, que é uma lib que faz esse trabalho bem mais rápido que o próprio typescript nativamente. Então primeiramente precisamos instalar os seguintes pacotes:
+
+`yarn add @babel/cli @babel/core @babel/node @babel/plugin-proposal-class-properties @babel/plugin-proposal-decorators @babel/preset-env @babel/preset-typescript babel-plugin-module-resolver babel-plugin-transform-typescript-metadata -D`
+
+E em seguida criar na root da nossa aplicação o arquivo `babel.config.js` com a seguinte estrutura: 
+
+**`babel.config.js`:**
+
+```js
+module.exports = {
+  presets: [
+    ["@babel/preset-env", { targets: {node: "current" } }],
+    "@babel/preset-typescript",
+  ],
+  plugins: [
+    [
+      "module-resolver",
+      {
+        alias: {
+          "@modules": ["./src/modules"],
+          "@config": ["./src/config"],
+          "@shared": ["./src/shared"],
+          "@errors": ["./src/errors"],
+          "@utils": ["./src/utils"]    
+        }
+      }
+    ],
+    "babel-plugin-transform-typescript-metadata",
+    ["@babel/plugin-proposal-decorators", { legacy: true }],
+    ["@babel/plugin-proposal-class-properties", { loose: true }],
+
+  ]
+}
+```
 
 
 <h4 align="center"> 
