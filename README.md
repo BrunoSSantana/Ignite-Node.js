@@ -9020,14 +9020,14 @@ app.use("/cars", express.static(`${upload.tmpFolder}/cars`));
 // ...
 ```
 
-## Aula CXLX
+## Aula CL
 > Configurando o e-mail em produção
 
 - Obter Domínio
 - Obter email
 - Validar email e domínio
 
-## Aula CXLXI
+## Aula CXLI
 > Criando provider do SESMail
 
 `SESMailProvider`
@@ -9141,10 +9141,34 @@ Em `SendForGotPasswordMailUseCase.ts`, vamos lembrar de renomear o a injeção  
 private mailProvider: IMailProvider
 ```
 
-## Aula CXLXII
+## Aula CLII
 > Estratégias de deploy
 
-Nesse projeto usaremos o serviço da AWS, o C2.
+Nesse projeto usaremos o serviço da AWS, o EC2.
+
+
+## Aula CLIII
+> Criando instância na AWS
+
+- Buscar pelo serviço EC2
+- Abrir painel de instâncias e clicar em **Executar instâncias**
+- Escolher a instância e o tipo de instância (Ubuntu 20.04 LTS | t2 micro)
+- Detalhes da instância: **Padrão**
+- Armazenamento: **Padrão**
+- Tags: Não necessário
+- Configure  o security group: **Padrão**
+- Review Instance Launch: **Executar**
+- Criar um novo par de chaves (já que não temos) e adicionar um nome
+- Fazer download od par de chaves e **Executar instâncias**
+- Exibir Instâncias
+- Renomear a instância
+- **Conectar** na parte superior da tela
+  Conectando na nossa máquina via SSH
+  - Abrir terminal
+  - `chmod 400 <nome do arquivo de chaves baichado>`
+  - `ssh -i <nome do arquivo de chaves baichado> <restante das informações passadas>`
+
+
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
