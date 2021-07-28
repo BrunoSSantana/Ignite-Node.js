@@ -9027,6 +9027,120 @@ app.use("/cars", express.static(`${upload.tmpFolder}/cars`));
 - Obter email
 - Validar email e domínio
 
+## Aula CXLXI
+> Criando provider do SESMail
+
+`SESMailProvider`
+
+```ts
+@injectable()
+class SESMailProvider implements IMailProvider {
+  private client: Transporter;
+  constructor() {
+    this.client = nodemailer.createTransport({
+      SES: new SES({
+        apiVersion: "2010-12-01",
+        region: process.env.AWS_REGION,
+      }),
+    });
+  }
+
+  async sendMail(
+    to: string,
+    subject: string,
+    path: string,
+    variables: any
+  ): Promise<void> {
+    const templateFileContent = fs.readFileSync(path).toString("utf-8");
+
+    const templateParse = handlebars.compile(templateFileContent);
+
+    const templateHTML = templateParse(variables);
+
+    await this.client.sendMail({
+      to,
+      from: "Rentalx <brunoosouza15@gmail.com>",
+      subject,
+      html: templateHTML,
+    });
+  }
+}
+```
+
+Descentralizando os serviços de provider por categoria:
+
+`providers/DateProvider/index.ts`
+
+```ts
+import { container } from "tsyringe";
+
+import "dotenv/config";
+import { IDateProvider } from "./IDateProvider";
+import { DayjsDateProvider } from "./implementaions/DayjsDateProvider";
+
+container.registerSingleton<IDateProvider>(
+  "DayjsDateProvider",
+  DayjsDateProvider
+);
+```
+
+`providers/MailProvider/index.ts`
+
+```ts
+import { container } from "tsyringe";
+
+import { IMailProvider } from "./IMailProvider";
+import { EtherealMailProvider } from "./implementations/EtherealMailProvider";
+import { SESMailProvider } from "./implementations/SESMailProvider";
+// configuração para ambientes de diferentes
+const mailProvider = {
+  ethereal: container.resolve(EtherealMailProvider),
+  ses: container.resolve(SESMailProvider),
+};
+
+container.registerInstance<IMailProvider>(
+  "MailProvider",
+  mailProvider[process.env.MAIL_PROVIDER]
+);
+```
+
+`providers/StorageProvider/index.ts`
+
+```ts
+import { container } from "tsyringe";
+
+import { LocalStorageProvider } from "./implementations/LocalStorageProvider";
+import { S3StorageProvider } from "./implementations/S3StorageProvider";
+import { IStorageProvider } from "./IStorageProvider";
+// configuração para ambientes de diferentes
+const diskStorage = {
+  local: LocalStorageProvider,
+  s3: S3StorageProvider,
+};
+
+container.registerSingleton<IStorageProvider>(
+  "StorageProvider",
+  diskStorage[process.env.disk]
+);
+```
+
+Importando Tudo para um único arquivo.
+
+`providers/index.ts`
+
+```ts
+import "./DateProvider";
+import "./MailProvider";
+import "./StorageProvider";
+```
+
+Em `SendForGotPasswordMailUseCase.ts`, vamos lembrar de renomear o a injeção  para `MailProvider` da seguinte maniera: 
+
+```ts
+@inject("MailProvider")
+private mailProvider: IMailProvider
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
