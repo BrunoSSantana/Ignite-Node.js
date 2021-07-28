@@ -9141,6 +9141,11 @@ Em `SendForGotPasswordMailUseCase.ts`, vamos lembrar de renomear o a injeção  
 private mailProvider: IMailProvider
 ```
 
+## Aula CXLXII
+> Estratégias de deploy
+
+Nesse projeto usaremos o serviço da AWS, o C2.
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
