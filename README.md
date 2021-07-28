@@ -9020,6 +9020,13 @@ app.use("/cars", express.static(`${upload.tmpFolder}/cars`));
 // ...
 ```
 
+## Aula CXLX
+> Configurando o e-mail em produção
+
+- Obter Domínio
+- Obter email
+- Validar email e domínio
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
