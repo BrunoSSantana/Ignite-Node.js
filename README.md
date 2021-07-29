@@ -9447,6 +9447,17 @@ Agora na nossa instância
   - executar: `cd ~/app/Rentalx/`
   - executar: `node dist/shared/infra/http/server.js`
 
+## Aula CLXII
+> Configurando Proxy Reverso
+
+Vamos instalar o PM2 com o objetivo de melhorar a forma de startar a nossa aplicação, ele será um gerenciador de processos no node.
+
+Instalar: `sudo yarn global add pm2`
+Startar nosso serviço: `pm2 start  dsit/shared/infra/http/server.js --name rentalx_api`
+executar nossas migrations: `./node_modules/.bin/typeorm migration:run`
+
+Para testarmos vamos no insomnia e trocar nosso endereço com `localhost` pelo endereço de ip da nossa instância: `http://18.228.138.72`
+
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
