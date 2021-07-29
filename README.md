@@ -9338,6 +9338,73 @@ export default async (): Promise<Connection> => {
 
 E o ormconif.json no repositóio instanciado vamos alterar a senha e os outros dados que foram alterados como a porta.
 
+## Aula CLX
+> Criando Github Actions
+
+Para que serve? Automatizar o processo de deploy na nossa instância. Em resumo vamos criar  uma "macro" que irá executar assim que for feita alguma alteração em nosso código.
+
+Antes de criarmos nossas actions, vamos configurar algumas keys. para isso vamos no nosso terminal e executar, `ssh-keygen`, salvando a key com o nome de `github-actions` (pode ser qualquer nome). Em seguida vamos adicionar essa key ao arquivo dentro da nossa instância chamado `authorized_keys` da seguinte maneira:
+- No nosso terminal: `cat github-actions`
+- Copia a key
+- No terminal da instância, no diretório onde se encontra a key github-actions: `cat >> authorized_keys`
+- Colamos a key copiada
+- `ctrl + D`
+
+Agora em nosso terminal novamente vamos copiar o conteúdo da key, github-actions que criamos e dentro do nosso repositório, vamos acessar a as secrets dentro de settings e adicionar 4 chaves:
+SSH_KEY => Adicionamos o conteúdo dentro de `github-actions`
+SSH_HOST => fica no comando quando logamos, ex: ssh app@**xx.xx.xxx**
+SSH_PORT => A padrão usada é a **22**
+SSH_USER => usuário que usamos no servidor, no nosso caso o **app**
+
+Terminada essa parte podemos prosseguir para criar nossas action.
+
+Existem alguns "presets" para cada tipo de servidor, mas seria algom mais complexo, vamos criar o nosso o a partir do mais genérico clicando `set up a workflow yourself` e adicionar a seguinte estrutura:
+
+```yml
+name: CI
+
+on:
+# com o push
+  push:
+  # onde será executado
+    branches: [ master ]
+
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Passos
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Nodejs
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - name: Install Dependencies
+        run: yarn
+      
+      - name: Build
+        run: yarn build
+
+      # copia os arquivos para onde vamos indicar
+      - uses: appleboy/scp-action@master
+      # passando as keys criadas
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          # copiar tudo, exceto o node_modules
+          source: "., !node_modules"
+          # mande para este diretório
+          target: "~/app/RentalX"
+```
+
+Finalizanmos executando e adicionando um nome para action.
+
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
