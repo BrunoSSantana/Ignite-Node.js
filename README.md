@@ -9311,6 +9311,34 @@ Vamos utlizar o docker apenas para gerar o banco de dados e para isso:
 - Acessa banco de dados: `docker exec -it database_ignite /bin/bash`
 
 
+## Aula CLVIII
+> Alterando a configuração do banco de dados
+
+Não vamos utilizar a noss aplicação dentro do container, etão para isso vamos refatorar o arquivo responssável pela conexão em nosso repositório local, com a seguinte estrutura:
+
+`typeorm/index`
+
+```ts
+import { Connection, createConnection, getConnectionOptions } from "typeorm";
+
+export default async (): Promise<Connection> => {
+  const defaultOptions = await getConnectionOptions();
+
+  return createConnection(
+    Object.assign(defaultOptions, {
+      database:
+        process.env.NODE_ENV === "test"
+          ? "rentals_test"
+          : defaultOptions.database,
+    })
+  );
+};
+
+```
+
+E o ormconif.json no repositóio instanciado vamos alterar a senha e os outros dados que foram alterados como a porta.
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
