@@ -9406,6 +9406,48 @@ jobs:
 Finalizanmos executando e adicionando um nome para action.
 
 
+## Aula CLXI
+> Configurando Proxy Reverso
+
+Permitir acesso externo para nossa API, o que será feito é que quando for realizado o acesso ao IP, na porta 80, o proxy reverso vai chamar nossa aplicação. Dessa forma, vamos iniciar instalando o nginx: 
+
+- `sudo apt install nginx`
+- Habilitara porta 80
+  - Em `Instâncias`, verificar a que `grupo de segurança` a instância pertence
+  - `Rede e segurança/Security groups`, selecionar a instância pelo nome do grupo
+  - Em `Regras de Entrada`, clicar em `Editar regras de enrada`
+  - Adicionar duas regras `http` e `https` ambas em ipv4
+
+Agora na nossa instância
+  - vamos no diretório: `/etc/nginx/sites-available/` 
+  - executar: `sudo touch rentalx`
+  - executar: `sudo vim rentalx`
+  - colar o seguinte código
+    ```
+    server {
+            listen 80 default_server;
+            listen [::]:80 default_server;
+
+        location / {
+            proxy_pass http://localhost:3333;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+    }
+    ```
+  - ir ao diretório: `/etc/nginx/sites-enabled/`
+  - executar: `sudo ln -s /etc/nginx/sites-available/rentalx rentalx`
+  - executar: `sudo rm -rf default`
+  - ir ao diretório: `/etc/nginx/sites-available/`
+  - executar: `sudo rm -rf default`
+  - executar: `sudo service nginx restart`
+  - executar: `cd ~/app/Rentalx/`
+  - executar: `node dist/shared/infra/http/server.js`
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
