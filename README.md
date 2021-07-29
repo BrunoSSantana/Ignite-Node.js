@@ -9258,7 +9258,7 @@ ormconfig.json
 ```
 
 
-## Aula CLVI
+## Aula CLVII
 > Clonando aplicação para deploy
 
 para clonarmos o nosso repositório para dentro da nossa instância na aws, vamos usar o ssh, gerando uma chave ssh da nossa instância como já foi jeito antriormente, adicionar essa chave no sso repositório e executando o git clone com ssh.
@@ -9294,7 +9294,7 @@ module.exports = {
 Para atualizar nossa instância vamos dar um `git push` em nosso repositório local e `git pull` em nosso repositório dentro da instância.
 
 
-## Aula CLVII
+## Aula CLVIII
 > Configurando o banco de dados
 
 Configurar o arquivo ormconfig:
@@ -9311,7 +9311,7 @@ Vamos utlizar o docker apenas para gerar o banco de dados e para isso:
 - Acessa banco de dados: `docker exec -it database_ignite /bin/bash`
 
 
-## Aula CLVIII
+## Aula CLIX
 > Alterando a configuração do banco de dados
 
 Não vamos utilizar a noss aplicação dentro do container, etão para isso vamos refatorar o arquivo responssável pela conexão em nosso repositório local, com a seguinte estrutura:
