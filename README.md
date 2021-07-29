@@ -9258,6 +9258,41 @@ ormconfig.json
 ```
 
 
+## Aula CLVI
+> Clonando aplicação para deploy
+
+para clonarmos o nosso repositório para dentro da nossa instância na aws, vamos usar o ssh, gerando uma chave ssh da nossa instância como já foi jeito antriormente, adicionar essa chave no sso repositório e executando o git clone com ssh.
+
+- Gerando ssh na nossa instância: `ssh-keygen`
+- Capturando ssh: `cat ~/.ssh/id_rsa.pub`
+- Copiar chave ssh
+- Adicionamos a chave seguindo o caminho: Github/settings/SSH and GPG keys/ Add new SSH
+- Criar pasta para aplicação: `mkdir app`
+- Acessar diretório criado: `cd app`
+- Clonar repositório: `git clone <link ssh>`
+- Acessamos a pasta da nossa aplicação e instalamos as dependências: `yarn`
+
+Agora faremos uma correção no arquivo Babel, mais precisamente nos alias, onde retiraremos os colchetes:
+```js
+module.exports = {
+  plugins: [
+    [
+      "module-resolver",
+      {
+        alias: {
+          "@modules": "./src/modules",
+          "@config": "./src/config",
+          "@shared": "./src/shared",
+          "@errors": "./src/errors",
+          "@utils": "./src/utils"
+        }
+      }
+    ],
+  ]
+}
+```
+Para atualizar nossa instância vamos dar um `git push` em nosso repositório local e `git pull` em nosso repositório dentro da instância.
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
