@@ -9293,6 +9293,24 @@ module.exports = {
 ```
 Para atualizar nossa instância vamos dar um `git push` em nosso repositório local e `git pull` em nosso repositório dentro da instância.
 
+
+## Aula CLVII
+> Configurando o banco de dados
+
+Configurar o arquivo ormconfig:
+- Cria cobria: `cp ormconfig.example.json ormconfig.json`
+- Abrir vim para editar dados do ormconfig: `vim ormconfig.json`
+- Mudar anda no arquivo ormconfig.json as referências da pasta src para dist e `ts` por `js`
+
+Vamos utlizar o docker apenas para gerar o banco de dados e para isso:
+- Alterar a porta q será rodada, ou seja, a porta que esstá a esquerda dos dois pontos
+- Modificar senha
+- Dar permissão ao docker: `sudo usermod -aG docker $USER`
+- Deslogar da instância: `logout`
+- Logamos novametne e vamos até a pasta e rodamos o comando: `docker-compose up -d database_ignite`
+- Acessa banco de dados: `docker exec -it database_ignite /bin/bash`
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
