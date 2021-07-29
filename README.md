@@ -9239,6 +9239,25 @@ module.exports = {
 ```
 
 
+## Aula CLVI
+> Aplicação no Github
+
+Vamos configurar o git ignore para impedir que ele envie alguns arquivos que são especóficos do nosso para o repositório e criar aalguns apara ficar no lugar dos mesmos como exemplo. Uma pequena observação apara o diretório `tmp/` onde será criado  o arquivo `.gitkeep` com a finalidade do diretório sem incuído no repositório sem que os outros arquivos os pastas sejam também incluídos. Além desse arquivo, na raiz do projeto também serão criados os arquivos `ormconfig.example.json` e `.env.example`.
+
+`.gitignore`
+
+```
+node_modules
+README.md
+tmp/*
+coverage
+.env
+!.gitkeep
+dist/
+ormconfig.json
+```
+
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
