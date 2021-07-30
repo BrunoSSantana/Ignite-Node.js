@@ -9480,6 +9480,47 @@ Vamos finalizar a configuração do Github actions para que ele atualize o node_
 ```
 
 
+## Aula CLXIV
+> Configurando domínio e SSL
+
+**O que iremmos fazer:**
+- Configuração de domínio
+- Configuração de segurança
+
+Para a configuração do domínio
+- Em aws vamos buscar pelo serviço de *Route 53*, na seção de *Zonas hospedadas*
+- Criar Zona hospedada
+- Informar domínio, marcar *Zona pública* e criar zona
+- Acessar zona criada
+- Criar Registros
+  - Adicionar nome ao registro
+  - Informar o valor do IP
+  - clicar em *Criar Registro*
+- Acessar o serviço de domínio, ir na parte de DNS
+- Adiciona registro com msm nome anteriormente criado
+- Tipo A
+- Endereço de IPV4
+
+Para configuração de segurança
+- Acessar `certbot` Informar que vams instalar em sistema ubuntu 20.04
+  - seguir os passos para instalação
+    - `sudo snap install core; sudo snap refresh core`
+    - `sudo  snap install -- classic certbot`
+    - `sudo  ln -s /snap/bin/certbot /usr/bin/certbot`
+    - `sudo certbot --nginx`
+    - Adicionar o email na nossa aplicação, de preferência do domínio.
+    - Aceitar as mensagens que aparecerem e adicionar o endereço de ip (junto com o nome dado na criação do registro)
+    - `sudo certbot renew --dry-run`
+- Restartar serviço: `sudo service nginx restart`
+
+Habilitar uso por outros aplicativos
+- Instalar o cors: `yarn add cors` e `yarn add @types/cros -D`
+- No arquivo app.ts antes de chamar as rotas, chamamos os `cors` da seguinte maneira:
+  ```ts
+  app.use(cors());
+  app.use(router);
+  ```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
