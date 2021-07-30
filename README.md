@@ -9598,6 +9598,80 @@ E agora vamos chamar o middleware no nosso arquivo `app.ts` antes da chamada das
 app.use(rateLimiter);
 ```
 
+
+## Aula CLXVI
+> Configurando Sentry
+
+O Sentry será a ferramenta que vai gerenciar nossos erros, ou seja, caso ocorra algum erro na nossa aplicação será notificado. Para isso, no dashboard vamos na seção de *projects > Create Project* selecionar a opção expresse, em *Set your default alert settings* e aqui vamos selcionar a opção de alerta a cada nova **issue** que nesse caso seria a cada erro. Em *Project name* vamos editar para **rentalx**.
+
+agora no nosso projeto vamos instalar duas dependências com o `yarn add @sentry/node @sentry/tracing` e estrutura o nosso código da seguinte maneira:
+
+`app.ts`
+
+```ts
+import "reflect-metadata";
+import cors from "cors";
+import express, { NextFunction, Request, Response } from "express";
+import "express-async-errors";
+import swaggerUi from "swagger-ui-express";
+
+import upload from "@config/upload";
+import * as Sentry from "@sentry/node";
+import * as Tracing from "@sentry/tracing";
+import "@shared/container";
+import { AppError } from "@shared/errors/AppErrors";
+import createConnection from "@shared/infra/typeorm";
+
+import swaggerFile from "../../../swagger.json";
+import rateLimiter from "./middlewares/rateLimiter";
+import { router } from "./routes";
+
+createConnection();
+const app = express();
+
+app.use(rateLimiter);
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    new Sentry.Integrations.Http({ tracing: true }),
+    new Tracing.Integrations.Express({ app }),
+  ],
+  tracesSampleRate: 1.0,
+});
+
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
+
+app.use(express.json());
+
+app.use("/avatar", express.static(`${upload.tmpFolder}/avatar`));
+app.use("/cars", express.static(`${upload.tmpFolder}/cars`));
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
+
+app.use(cors());
+app.use(router);
+
+app.use(Sentry.Handlers.errorHandler());
+
+app.use(
+  (err: Error, request: Request, response: Response, next: NextFunction) => {
+    if (err instanceof AppError) {
+      return response.status(err.statusCode).json({
+        message: err.message,
+      });
+    }
+    return response.status(500).json({
+      status: "error",
+      message: `Internal server error - ${err.message}`,
+    });
+  }
+);
+
+export { app };
+```
+
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
 </h4>
