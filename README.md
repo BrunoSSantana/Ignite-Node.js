@@ -9448,7 +9448,7 @@ Agora na nossa instância
   - executar: `node dist/shared/infra/http/server.js`
 
 ## Aula CLXII
-> Configurando Proxy Reverso
+> Configurando PM2 na aplicação
 
 Vamos instalar o PM2 com o objetivo de melhorar a forma de startar a nossa aplicação, ele será um gerenciador de processos no node.
 
