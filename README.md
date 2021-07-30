@@ -9458,6 +9458,27 @@ executar nossas migrations: `./node_modules/.bin/typeorm migration:run`
 
 Para testarmos vamos no insomnia e trocar nosso endereço com `localhost` pelo endereço de ip da nossa instância: `http://18.228.138.72`
 
+## Aula CLXIII
+> Finalizando configuração das Actions
+
+Vamos finalizar a configuração do Github actions para que ele atualize o node_modules, rodar as migrations e restartar o sistema como um todo com o pm2. Para isso vamos adcionar o seguinte trecho de código ao nosso arquivo do Github Actions:
+
+```yml
+
+      - name: Upload API
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ~/app/Rentalx
+            yarn
+            ./node_modules/.bin/typeorm migration:run
+            pm2 restart rentalx_api
+```
+
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
