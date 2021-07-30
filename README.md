@@ -9520,6 +9520,83 @@ Habilitar uso por outros aplicativos
   app.use(cors());
   app.use(router);
   ```
+  
+  
+
+## Aula CLXV
+> Configurando Rate Limiter
+
+Paa evitar o ataque ao nosso sistema de muitas requisições em um período de curto tempo fazendo assim com que o sistema caia, vamos criar um middleware para lançar um erro indicando esse alto volume de requisição, para isso vamos usar o pacote `rate-limiter-flexible` onde precisaremos usar o redis e para o redis vamos usar os containers do docker-compose da seguinte maneira:
+
+```yml
+# restante do código
+services:
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+
+# restante do código
+```
+
+Agora iremos instalar os pacotes:  redis, rate-limiter-flexible e sua tipagem.
+
+```zsh
+yarn add redis 
+yarn add @types/redis  -D
+yarn add rate-limiter-flexible
+```
+
+Vamos passar agora algumas variáveis de ambiente que serão usadas em seguinda.
+
+`.env`
+
+```
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+```
+
+E finalmente na pasta `middlewares/` vaos criar o arquivo `rateLimiter.ts` com a seguinte estrutura:
+```ts
+import { NextFunction, Request, Response } from "express";
+import { RateLimiterRedis } from "rate-limiter-flexible";
+import redis from "redis";
+
+import { AppError } from "@shared/errors/AppErrors";
+
+const redisClient = redis.createClient({
+  host: process.env.REDIS_HOST,
+  port: Number(process.env.REDIS_PORT),
+});
+
+const limiter = new RateLimiterRedis({
+  storeClient: redisClient,
+  keyPrefix: "rateLimiter",
+  points: 5, // 10 requests
+  duration: 5, // per 1 second by IP
+});
+
+export default async function rateLimiter(
+  request: Request,
+  respose: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    await limiter.consume(request.ip);
+    return next();
+  } catch (err) {
+    throw new AppError("Too many requests", 429);
+  }
+}
+```
+
+E agora vamos chamar o middleware no nosso arquivo `app.ts` antes da chamada das rotas.
+
+```ts
+app.use(rateLimiter);
+```
 
 <h4 align="center"> 
 	🚧 🚀 Em construção... 🚧
