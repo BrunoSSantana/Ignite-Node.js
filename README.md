@@ -3,8 +3,8 @@
 # Ignite Desafio 01 trilha node.js
 
 <p align="center">
-<img src="https://img.shields.io/github/license/BrunoSSantana/desafio02-trilha-node.js" />
-<img src="https://img.shields.io/github/last-commit/BrunoSSantana/desafio02-trilha-node.js" />
+<img src="https://img.shields.io/github/license/BrunoSSantana/desafio02-trilha-node.js?style=flat-square" />
+<img src="https://img.shields.io/github/last-commit/BrunoSSantana/desafio02-trilha-node.js?style=flat-square" />
 </p>
 
 ---
