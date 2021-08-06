@@ -189,7 +189,7 @@
 </details>
 
 <details>
-  <summary>Chapter V</summary>
+  <summary>Chapter VI</summary>
 
   * [Aula CXLII - Corrigindo o refresh token](#aula-cxlii)
   * [Aula CXLIII - Criando conta na AWS](#aula-cxliii)
@@ -204,7 +204,19 @@
   * [Aula CLII - Configurando instância](#aula-clii)
   * [Aula CLIII - Configurando o Babel na aplicação](#aula-cliii)
   * [Aula CLIV - Aplicação no Github](#aula-cliv)
-</details>
+  * [Aula CLV - Aplicação no Github](#aula-cliv)
+  * [Aula CLVI - Aplicação no Github](#aula-cliv)
+  * [Aula CLVII - Aplicação no Github](#aula-cliv)
+  * [Aula CLVIII - Aplicação no Github](#aula-cliv)
+  * [Aula CLIX - Aplicação no Github](#aula-cliv)
+  * [Aula CLX - Aplicação no Github](#aula-cliv)
+  * [Aula CLXI - Aplicação no Github](#aula-cliv)
+  * [Aula CLXII - Aplicação no Github](#aula-cliv)
+  * [Aula CLXIII - Aplicação no Github](#aula-cliv)
+  * [Aula CLXIV - Aplicação no Github](#aula-cliv)
+  * [Aula CLXV - Aplicação no Github](#aula-cliv)
+  * [Aula CLXVI - Configurando Sentry](#aula-cliv)
+  </details>
 
 
 ### Projetos Criados
