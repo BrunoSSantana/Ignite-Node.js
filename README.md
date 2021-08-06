@@ -7411,7 +7411,8 @@ class RentalsRepositoryInMemory implements IRentalsRepository {
         license_plate: "ABC-1234",
       })
     ).rejects.toEqual(new AppError("Car already exists!"));
-    ```
+  ```
+   
 
 ## Aula CXXXI
 > Refresh Token
