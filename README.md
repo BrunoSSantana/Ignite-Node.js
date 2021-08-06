@@ -8654,7 +8654,7 @@ export default{
 }
 ```
 
-## Aula CXLIV
+## Aula CXLIII
 > Corrigindo o refresh token
 
 Aqui vamos corrigir o refresh_token para que o token cumpra com a finalidade que foi concebido.
@@ -8763,14 +8763,14 @@ export async function ensureAuthenticated(
 }
 ```
 
-## Aula CXLV
+## Aula CXLIV
 > Criando conta na AWS
 
 Vamos  precisar de uma conta na aws para podermos dar continuidade com a nossa API, fazendo o armazenamento dela no storage da aws.
 
 Storage - São armarzenamentos específicos dentro da cloud para armazenamento de arquivos. O que será usado nesse projeto será o da amazon, **S3**.
 
-## Aula CXLVI
+## Aula CXLV
 > Criação do usuário e S3
 
 Agora nosso objetivo é criar um bucket, que seria algo parecido com um diretório onde será armazenado nossos arquivos, mas antes, vamos também criar um usuário, um **IAM**. Para isso:
@@ -8795,7 +8795,7 @@ Com usuário finalizado vamos agora criar nosso bucket.
 - *Versionamento* e *Criptografia* desativadas
 - Clicar no botão de `Criar bucket`
 
-## Aula CXLVII
+## Aula CXLVI
 > Provider de Upload
 
 Aqui vamos coeçar a configurar nossa aplicação apra fazer o upload no bucket criado. Nesse sentido, vamos iniciar instalando a dependência que será responssável pelo comicação com o bucket da aws: `yarn add aws-sdk`. Além disso, vamos passar agora as chaves do bucket no arquivo `.env` em variáveis como indiva a documentação da aws.
@@ -8930,7 +8930,7 @@ container.registerSingleton<IStorageProvider>(
 );
 ```
 
-## Aula CXLVIII
+## Aula CXLVII
 > Upload utilizando S3
 
 Aqui vamos implementr o S3 no StorageProvider:
@@ -9004,7 +9004,7 @@ container.registerSingleton<IStorageProvider>(
 );
 ```
 
-## Aula CXLIX
+## Aula CXLVIII
 > Criando URL de acesso do avatar
 
 Antes de tratar a urla do nosso avatar, vamos corrigir o upload de carros adicionando o storage provider a ele.
@@ -9160,14 +9160,14 @@ app.use("/cars", express.static(`${upload.tmpFolder}/cars`));
 // ...
 ```
 
-## Aula CL
+## Aula CXLIX
 > Configurando o e-mail em produção
 
 - Obter Domínio
 - Obter email
 - Validar email e domínio
 
-## Aula CLI
+## Aula CL
 > Criando provider do SESMail
 
 `SESMailProvider`
@@ -9281,13 +9281,13 @@ Em `SendForGotPasswordMailUseCase.ts`, vamos lembrar de renomear o a injeção  
 private mailProvider: IMailProvider
 ```
 
-## Aula CLII
+## Aula CLI
 > Estratégias de deploy
 
 Nesse projeto usaremos o serviço da AWS, o EC2.
 
 
-## Aula CLIII
+## Aula CLII
 > Criando instância na AWS
 
 - Buscar pelo serviço EC2
@@ -9308,7 +9308,7 @@ Nesse projeto usaremos o serviço da AWS, o EC2.
   - `chmod 400 <nome do arquivo de chaves baichado>`
   - `ssh -i <nome do arquivo de chaves baichado> <restante das informações passadas>`
 
-## Aula CLIV
+## Aula CLIII
 > Configurando instância
 
 Agora já na nossa instância acessando via nosso terminal vamos seguir os seguintes procedimentos:
@@ -9340,7 +9340,7 @@ Agora já na nossa instância acessando via nosso terminal vamos seguir os segui
 - Install yarn
 
 
-## Aula CLV
+## Aula CLIV
 > Configurando o Babel na aplicação
 
 Para buildar nossa aplicação, ou seja transformar ela de typescript, liguagem essa que os navegarpres não entendem, para javascript, usaremos o babel, que é uma lib que faz esse trabalho bem mais rápido que o próprio typescript nativamente. Então primeiramente precisamos instalar os seguintes pacotes:
@@ -9379,7 +9379,7 @@ module.exports = {
 ```
 
 
-## Aula CLVI
+## Aula CLV
 > Aplicação no Github
 
 Vamos configurar o git ignore para impedir que ele envie alguns arquivos que são especóficos do nosso para o repositório e criar aalguns apara ficar no lugar dos mesmos como exemplo. Uma pequena observação apara o diretório `tmp/` onde será criado  o arquivo `.gitkeep` com a finalidade do diretório sem incuído no repositório sem que os outros arquivos os pastas sejam também incluídos. Além desse arquivo, na raiz do projeto também serão criados os arquivos `ormconfig.example.json` e `.env.example`.
@@ -9398,7 +9398,7 @@ ormconfig.json
 ```
 
 
-## Aula CLVII
+## Aula CLVI
 > Clonando aplicação para deploy
 
 para clonarmos o nosso repositório para dentro da nossa instância na aws, vamos usar o ssh, gerando uma chave ssh da nossa instância como já foi jeito antriormente, adicionar essa chave no sso repositório e executando o git clone com ssh.
@@ -9434,7 +9434,7 @@ module.exports = {
 Para atualizar nossa instância vamos dar um `git push` em nosso repositório local e `git pull` em nosso repositório dentro da instância.
 
 
-## Aula CLVIII
+## Aula CLVII
 > Configurando o banco de dados
 
 Configurar o arquivo ormconfig:
@@ -9451,7 +9451,7 @@ Vamos utlizar o docker apenas para gerar o banco de dados e para isso:
 - Acessa banco de dados: `docker exec -it database_ignite /bin/bash`
 
 
-## Aula CLIX
+## Aula CLVIII
 > Alterando a configuração do banco de dados
 
 Não vamos utilizar a noss aplicação dentro do container, etão para isso vamos refatorar o arquivo responssável pela conexão em nosso repositório local, com a seguinte estrutura:
@@ -9478,7 +9478,7 @@ export default async (): Promise<Connection> => {
 
 E o ormconif.json no repositóio instanciado vamos alterar a senha e os outros dados que foram alterados como a porta.
 
-## Aula CLX
+## Aula CLIX
 > Criando Github Actions
 
 Para que serve? Automatizar o processo de deploy na nossa instância. Em resumo vamos criar  uma "macro" que irá executar assim que for feita alguma alteração em nosso código.
@@ -9546,7 +9546,7 @@ jobs:
 Finalizanmos executando e adicionando um nome para action.
 
 
-## Aula CLXI
+## Aula CLX
 > Configurando Proxy Reverso
 
 Permitir acesso externo para nossa API, o que será feito é que quando for realizado o acesso ao IP, na porta 80, o proxy reverso vai chamar nossa aplicação. Dessa forma, vamos iniciar instalando o nginx: 
@@ -9587,7 +9587,7 @@ Agora na nossa instância
   - executar: `cd ~/app/Rentalx/`
   - executar: `node dist/shared/infra/http/server.js`
 
-## Aula CLXII
+## Aula CLXI
 > Configurando PM2 na aplicação
 
 Vamos instalar o PM2 com o objetivo de melhorar a forma de startar a nossa aplicação, ele será um gerenciador de processos no node.
@@ -9598,7 +9598,7 @@ executar nossas migrations: `./node_modules/.bin/typeorm migration:run`
 
 Para testarmos vamos no insomnia e trocar nosso endereço com `localhost` pelo endereço de ip da nossa instância: `http://18.228.138.72`
 
-## Aula CLXIII
+## Aula CLXII
 > Finalizando configuração das Actions
 
 Vamos finalizar a configuração do Github actions para que ele atualize o node_modules, rodar as migrations e restartar o sistema como um todo com o pm2. Para isso vamos adcionar o seguinte trecho de código ao nosso arquivo do Github Actions:
@@ -9620,7 +9620,7 @@ Vamos finalizar a configuração do Github actions para que ele atualize o node_
 ```
 
 
-## Aula CLXIV
+## Aula CLXIII
 > Configurando domínio e SSL
 
 **O que iremmos fazer:**
@@ -9663,7 +9663,7 @@ Habilitar uso por outros aplicativos
   
   
 
-## Aula CLXV
+## Aula CLXIV
 > Configurando Rate Limiter
 
 Paa evitar o ataque ao nosso sistema de muitas requisições em um período de curto tempo fazendo assim com que o sistema caia, vamos criar um middleware para lançar um erro indicando esse alto volume de requisição, para isso vamos usar o pacote `rate-limiter-flexible` onde precisaremos usar o redis e para o redis vamos usar os containers do docker-compose da seguinte maneira:
@@ -9739,7 +9739,7 @@ app.use(rateLimiter);
 ```
 
 
-## Aula CLXVI
+## Aula CLXV
 > Configurando Sentry
 
 O Sentry será a ferramenta que vai gerenciar nossos erros, ou seja, caso ocorra algum erro na nossa aplicação será notificado. Para isso, no dashboard vamos na seção de *projects > Create Project* selecionar a opção expresse, em *Set your default alert settings* e aqui vamos selcionar a opção de alerta a cada nova **issue** que nesse caso seria a cada erro. Em *Project name* vamos editar para **rentalx**.
