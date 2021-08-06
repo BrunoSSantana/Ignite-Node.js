@@ -10,69 +10,158 @@
 ---
 ### Sumário
  <details>
-  <summary>CHAPTER I</summary>
+  <summary>Chapter I</summary>
  
   * [Aula I - Introdção](#aula-i)
   * [Aula II - Conceito do Node](#aula-ii)
-  * [Aula III](#aula-ii)
-  * [Aula IV](#aula-iv)
-  * [Aula V](#aula-v)
-  * [Aula VI](#aula-vi)
-  * [Aula VII](#aula-vii)
-  * [Aula VIII](#aula-viii)
-  * [Aula IX](#aula-ix)
-  * [Aula X](#aula-x)
-  * [Aula XI](#aula-xi)
-  * [Aula XII](#aula-xii)
-  * [Aula XIII](#aula-xiii)
-  * [Aula XIV](#aula-xiv)
-  * [Aula XV](#aula-xv)
-  * [Aula XVI](#aula-xvi)
-  * [Aula XVII](#aula-xvii)
-  * [Aula XVIII](#aula-xviii)
-  * [Aula XIX](#aula-xix)
-  * [Aula XX](#aula-xx)
+  * [Aula III] - Conceitos Sobre API REST(#aula-ii)
+  * [Aula IV] - Métodos de Requisição HTTP(#aula-iv)
+  * [Aula V] - Criando a Estrutura do Projeto(#aula-v)
+  * [Aula VI] - Adicionado o Nodemon na aplicação(#aula-vi)
+  * [Aula VII] - Utilizando os Métodos HTTP(#aula-vii)
+  * [Aula VIII] - Utilizando o Insomnia(#aula-viii)
+  * [Aula IX] - Parâmetros da Requisição(#aula-ix)
+  * [Aula X] - Conhecendo os requisitos da aplicação(#aula-x)
+  * [Aula XI] - Cadastro de conta(#aula-xi)
+  * [Aula XII] - Validando CPF existente(#aula-xii)
+  * [Aula XIII] - Listando extrato(#aula-xiii)
+  * [Aula XIV] - Validando conta(#aula-xiv)
+  * [Aula XV] - Middlewares(#aula-xv)
+  * [Aula XVI] - Criando depósito na conta(#aula-xvi)
+  * [Aula XVII] - Criando saque na conta(#aula-xvii)
+  * [Aula XVIII] - Listar extrato bancário por data(#aula-xviii)
+  * [Aula XIX] - Atualizar conta(#aula-xix)
+  * [Aula XX] - Remover conta(#aula-xx)
 </details>
 <details>
- <summary>DESAFIOS I</summary>
+ <summary>Desafios I</summary>
 
  - [Desafio I: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio01-trilha-node.js/)
  - [Desafio II: Trabalhando com Middlewares](https://github.com/BrunoSSantana/desafio02-trilha-node.js/)
  - [Desafio III: Corrigindo o código](https://github.com/BrunoSSantana/desafio03-trilha-node.js/)
 </details>
 <details>
- <summary>CHAPTER II</summary>
+ <summary>Chapter II</summary>
  
-  * [Aula XXI](#aula-xxi)
-  * [Aula XXII](#aula-xxii)
-  * [Aula XXIII](#aula-xxiii)
-  * [Aula XXIV](#aula-xxiv)
-  * [Aula XXV](#aula-xxv)
-  * [Aula XXVI](#aula-xxvi)
-  * [Aula XXVII](#aula-xxvii)
-  * [Aula XXVIII](#aula-xxviii)
-  * [Aula XXIX](#aula-xxix)
-  * [Aula XXX](#aula-xxx)
-  * [Aula XXXI](#aula-xxxi)
-  * [Aula XXXII](#aula-xxxii)
-  * [Aula XXXIII](#aula-xxxiii)
-  * [Aula XXXIV](#aula-xxxiv)
-  * [Aula XXXV](#aula-xxxv)
-
+  * [Aula XXI] - Introdução ao Chpater II(#aula-xxi)
+  * [Aula XXII] - Introdução ao Typescript(#aula-xxii)
+  * [Aula XXIII] - Criando Projeto com Typescript(#aula-xxiii)
+  * [Aula XXIV] - Adicionando os Tipos(#aula-xxiv)
+  * [Aula XXV] - Definindo os parâmetos obrigatórios(#aula-xxv)
+  * [Aula XXVI] - Configurando ts-node-dev(#aula-xxvi)
+  * [Aula XXVII] - Debugando aplicação(#aula-xxvii)
+  * [Aula XXVIII] - Criando Categoria(#aula-xxviii)
+  * [Aula XXIX] - Inserindo Id com uuid(#aula-xxix)
+  * [Aula XXX] - Inserindo Tipagem para Categoria(#aula-xxx)
+  * [Aula XXXI] - Criando um Repositório de Categoria(#aula-xxxi)
+  * [Aula XXXII] - Listando Categorias(#aula-xxxii)
+  * [Aula XXXIII] - Validando Cadastro de Categoria(#aula-xxxiii)
+  * [Aula XXXIV] - Entendendo o S.O.L.I.D(#aula-xxxiv)
+  * [Aula XXXV] - Utilizando o Princípio de Responsabilidade Única (SRP)(#aula-xxxv)
+  * [Aula XXXVI] - Utilizando o Princípio da Substituição de Liskov (LSP)(#aula-xxxvi)
+  * [Aula XXXVII] - Criando Service de Especificação e Separando em Módulos(#aula-xxxvii)
+  * [Aula XXXVIII] - Corrigindo as Importações(#aula-xxxviii)
+  * [Aula XXXIX] - Criando repositório de Especificações(#aula-xxxix)
+  * [Aula XL] - Criando os Use Case de Categoria(#aula-xl)
+  * [Aula XLI] - Refatorando a Listagem de Categoria(#aula-xli)
+  * [Aula XLII] - Conhecendo Singleton Pattern(#aula-xlii)
+  * [Aula XLIII] - Separando os repositórios(#aula-xliii)
+  * [Aula XLIV] - Criando Use Case de Especificações(#aula-xliv)
+  * [Aula XLV] - Refatorando as Rotas(#aula-xlv)
+  * [Aula XLVI] - Conhecendo o Multer(#aula-xlvi)
+  * [Aula XLVII] - Criando Upload de Arquivos(#aula-xlvii)
+  * [Aula XLVIII] - Criando o Use Case para Importar Categorias(#aula-xlviii)
+  * [Aula XLIX] - Conhecendo o conceito de stream(#aula-xlix)
+  * [Aula L] - Lendo os Dados do Upload(#aula-l)
+  * [Aula LI] - Inserindo os Dados do Upload no Repositório(#aula-li)
+  * [Aula LII] - Conhecendo o Swagger(#aula-lii)
+  * [Aula LIII] - Configurando o Swagger(#aula-liii)
+  * [Aula LIV] - Criando a Documentação de Criação de Categoria(#aula-liv)
+  * [Aula LV] - Criando Documentação da Listagem de Categorias(#aula-lv)
+  * [Aula LVI] - Removendo os Arquivos de Upload(#aula-lvi)
+	
 </details>
 
 <details>
- <summary>DESAFIOS II</summary>
-
+ <summary>Desafios II</summary>
  - [Desafio IV: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio04-trilha-node.js/)
 </details>
+
+<details>
+  <summary>Chapter III</summary>
+  * [Aula LVII] - Introdução ao Chapter III(#aula-lvii)
+  * [Aula LVIII] - O que é Docker?(#aula-lvii)
+  * [Aula LIX] - Criando nosso peimeiro container e Dockerfile(#aula-lix)
+  * [Aula LX] - Usando Docker-compose(#aula-lx)
+  * [Aula LXI] - Comandos do Docker(#aula-lxi)
+  * [Aula LXII] - Conhecendo as formas de usar o banco de dados(#aula-lxii)
+  * [Aula LXIII] - Instalando TypeORM(#aula-lxiii)
+  * [Aula LXIV] - Criando Container do postgres(#aula-lxiv)
+  * [Aula LXV] - Aprendendo o conceito de migrations(#aula-lxv)
+  * [Aula LXVI] - Criando Migration de Category(#aula-lxvi)
+  * [Aula LXVII] - Refatorando o Model de Category(#aula-lxvii)
+  * [Aula LXVIII] - Alterando o Repositório de Category(#aula-lxviii)
+  * [Aula LXIX] - Refatorando o Caso de Uso de Category(#aula-lxix)
+  * [Aula LXX] - Entendendo as Alterações(#aula-lxx)
+  * [Aula LXXI] - Conhecendo TSyringe(#aula-lxxi)
+  * [Aula LXXII] - Refatorando as especificações(#aula-lxxii)
+  * [Aula LXXIII] - Criando Migration de Especificações(#aula-lxxiii)
+  * [Aula LXXIV] - Continuação da Documentação(#aula-lxxiv)
+  * [Aula LXXV] - Criando Migration de Usuário(#aula-lxxv)
+  * [Aula LXXVI] - Criando Repositório de Usuário(#aula-lxxvi)
+  * [Aula LXXVII] - Criando Controller de Usuário(#aula-lxxvii)
+  * [Aula LXXVIII] - Alterar Tabela de Usuário(#aula-lxxviii)
+  * [Aula LXXIX] - Criptografar senha(#aula-lxxix)
+  * [Aula LXXX] - Entendendo Antenticação com JWT(#aula-lxxx)
+  * [Aula LXXXI] - Criando Token do Usuário(#aula-lxxxi)
+  * [Aula LXXXII] - Autenticação das Rotas(#aula-lxxxii)
+  * [Aula LXXXIII] - Tratamento de exceções(#aula-lxxxiii)
+  * [Aula LXXXIV] - Adcionando Coluna de Avatar(#aula-lxxxiv)
+  * [Aula LXXXV] - Upload de Avatar(#aula-lxxxv)
+  * [Aula LXXXVI] - Remover Arquivo de Avatar Existente(#aula-lxxxvi)
+</details>
+
+<details>
+  <summary>Chapter IV</summary>
+  * [Aula LXXXVII] - Introdução ao Chapter IV(#aula-lXXXvii)
+  * [Aula LXXXVIII] - Conhecendo os Tipos de Testes(#aula-lXXXviii)
+  * [Aula LXXXIX] - Criando o primeiro teste(#aula-lxxxix)
+  * [Aula XC] - Teste de Criação de Categoria(#aula-xc)
+  * [Aula XCI] - Teste de Autentificação do Usuário(#aula-xci)
+  * [Aula XCII] - Imports da Aplicação(#aula-xcii)
+  * [Aula XCIII] - Corrigindo as importações(#aula-xciii)
+  * [Aula XCIV] - Refatorando a aplicação(#aula-xciv)
+  * [Aula XCV] - Escrevendo os requisitos da aplicação(#aula-xcv)
+  * [Aula XCVI] - Alterando a importação dos repositórios(#aula-xcvi)
+  * [Aula XCVII] - Criando migrations do carro(#aula-xcvii)
+  * [Aula XCVIII] - TDD na Prática(#aula-xcviii)
+  * [Aula XCIX] - Continuando caso de uso de carros(#aula-xcix)
+  * [Aula C] - Estruturando a Entidade de Carros(#aula-c)
+  * [Aula CI] - Criando seed de usuário(#aula-ci)
+  * [Aula CII] - Criando middleware de administrador(#aula-cii)
+  * [Aula CIII] - Listando carros disponíveis(#aula-ciii)
+  * [Aula CIV] - Continuação da listagem de carros disponíveis(#aula-civ)
+  * [Aula CV] - Criando Migrations Especificação de carros(Many to Many)(#aula-cv)
+  * [Aula CVI] - Caso de uso do cadastro de especificação para carro(#aula-cvi)
+  * [Aula CVII] - Continuação dos CreateCarSpecificationUseCase(#aula-cvii)
+  * [Aula CVIII] - Finalizando CreateCarSpecificationUseCase(#aula-cviii)
+  * [Aula CIX] - Criando migrations de imagens de carrosenha(#aula-cix)
+  * [Aula CX] - Caso de uso do cadastro de imagens do carro(#aula-cx)
+  * [Aula CXI] - Criando migrations do aluguel(#aula-cxi)
+  * [Aula CXII] - Criando os testes do aluguel(#aula-cxii)
+  * [Aula CXIII] - Continuação do cadastro do aluguel(#aula-cxiii)
+  * [Aula CXIV] - Trabalhando com datas com dayjs(#aula-cxiv)
+  * [Aula CXV] - Criando provider para data(#aula-cxv)
+  * [Aula CXVI] - Criando controller(#aula-cxvi)
+</details>
+
 
 ### Projetos Criados
 - [RENTALX](https://github.com/BrunoSSantana/rentalx)
 
 ---
 
-## CHAPTER I
+**CHAPTER I**
   
   ## Aula I
   > Introdução
@@ -470,10 +559,10 @@ app.delete("/account", userExists, (request, response) => {
 });
 ```
 
-## CHAPTER II
+**CHAPTER II**
 
 ## Aula XXI
-> Introdução ao Chapter II
+> Introdução
 
 Nesse capítulo será desenvolvido uma API de aluguel de carros onde iremos trabalhar nessa API com o typescript explicar pq usá-lo, como usá-lo. Na nossa API faremos cadastros de usuários, alugueis, carros e suas especificações com o intuito de construir um sistema de busca, além de abordar o streming do node e seus módulos, introdução a SOLID (princípios de programação orientada a objeto), arquitetura limpa, melhorar a escrita e a qualidade do código afim de facilitar o entendimento e sua manutenção além da criação de uma documentação com utilização de ferramentas.
 
