@@ -34,7 +34,7 @@
   * [Aula XX - Remover conta](#aula-xx)
 </details>
 <details>
- <summary>Desafios I</summary>
+ <summary>Desafios Cap I</summary>
 
  - [Desafio I: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio01-trilha-node.js/)
  - [Desafio II: Trabalhando com Middlewares](https://github.com/BrunoSSantana/desafio02-trilha-node.js/)
@@ -83,7 +83,7 @@
 </details>
 
 <details>
- <summary>Desafios II</summary>
+ <summary>Desafios Cap II</summary>
 
  - [Desafio IV: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio04-trilha-node.js/)
 </details>
@@ -121,6 +121,12 @@
   * [Aula LXXXIV - Adcionando Coluna de Avatar](#aula-lxxxiv)
   * [Aula LXXXV - Upload de Avatar](#aula-lxxxv)
   * [Aula LXXXVI - Remover Arquivo de Avatar Existente](#aula-lxxxvi)
+</details>
+
+<details>
+ <summary>Desafios Cap III</summary>
+
+ - [Desafio V: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio05-trilha-node.js/)
 </details>
 
 <details>
@@ -162,6 +168,12 @@
   * [Aula CXX - Criando teste de listagem de categorias](#aula-cxx)
 </details>
 
+<details>
+ <summary>Desafios Cap IV</summary>
+
+ - [Desafio VI: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio06-trilha-node.js/)
+ - [Desafio VII: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio07-trilha-node.js/)
+</details>
 
 <details>
   <summary>Chapter V</summary>
@@ -191,6 +203,12 @@
 </details>
 
 <details>
+ <summary>Desafios Cap V</summary>
+
+ - [Desafio VIII: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio08-trilha-node.js/)
+</details>
+
+<details>
   <summary>Chapter VI</summary>
 
   * [Aula CXLIII - Corrigindo o refresh token](#aula-cxliii)
@@ -217,6 +235,12 @@
   * [Aula CLXIV - Configurando Rate Limiter](#aula-clxiv)
   * [Aula CLXV - Configurando Sentry](#aula-clxv)
   </details>
+
+  <details>
+ <summary>Desafios Cap VI</summary>
+
+ - [Desafio IX: Conceitos do Node.js](https://github.com/BrunoSSantana/desafio09-trilha-node.js/)
+</details>
 
 
 ### Projetos Criados
